@@ -37,6 +37,23 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.deepEqual(await totals(), ['/2', '/710', '/1,700']);
     await expect(page.locator('#resetAt')).toHaveText(/^\d+\/1\(.\) 05:00$/);
     await expect(page.locator('.reset-line')).toHaveText(/^리셋까지 \d+(일 \d+시간|시간 \d+분|분)$/);
+    // Even the longest countdown fits its box and keeps clear of the divider line, at panel and website widths.
+    for (const w of [300, 360, 480, 1280]) {
+      await page.setViewportSize({ width: w, height: 800 });
+      const fit = await page.evaluate(() => {
+        const box = document.querySelector('.status-reset'), line = box.querySelector('.reset-line'), b = document.getElementById('resetLeft'), keep = b.textContent;
+        const out = [];
+        for (const t of ['30일 23시간', '23시간 59분']) {
+          b.textContent = t;
+          const bl = box.getBoundingClientRect(), ll = line.getBoundingClientRect(), side = getComputedStyle(box).borderLeftWidth !== '0px';
+          out.push(line.scrollWidth <= line.clientWidth + 1 && ll.left >= bl.left && (!side || ll.left - bl.left >= 14));
+        }
+        b.textContent = keep;
+        return out.every(Boolean) && ![...document.querySelectorAll('.stock')].some(s => s.scrollWidth > s.clientWidth + 1);
+      });
+      assert.ok(fit, `reset countdown fits clear of the divider at ${w}px`);
+    }
+    await page.setViewportSize({ width: 360, height: 760 });
     assert.deepEqual(await page.locator('#tab-monthly .shop').evaluateAll(els => els.map(e => e.dataset.group)), ['fp', 'pendant', 'casino', 'skyleap', 'daily', 'treasure']);
     assert.equal(await page.locator('.sign').count(), 0);
     const broken = await page.locator('img').evaluateAll(imgs => imgs.filter(i => !i.complete || !i.naturalWidth).map(i => i.src));
