@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "그랑블루 도우미",
-  "version": "1.15.3",
+  "version": "1.16.0",
   "description": "월간교환 체크리스트, 극성기 계산기, 고전장 정보, 공략 검색기, 보스 패턴표를 브라우저 오른쪽 패널에 띄웁니다. 게임 페이지에는 접속하지 않습니다.",
   "permissions": ["sidePanel", "storage"],
   "background": { "service_worker": "background.js" },

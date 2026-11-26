@@ -42,7 +42,7 @@
     state.gw = root.GBF_GW.normalize(state.gw);
     state.search = root.GBF_SEARCH.normalize(state.search);
     state.pattern = root.GBF_PATTERN.normalize(state.pattern);
-    if (!['monthly', 'trehun', 'gw', 'search', 'pattern'].includes(state.tab)) state.tab = 'monthly';
+    if (!['monthly', 'trehun', 'gw', 'search', 'pattern', 'recommend'].includes(state.tab)) state.tab = 'monthly';
     return state;
   }
 
@@ -69,6 +69,7 @@
     document.getElementById('tab-gw').hidden = tab !== 'gw';
     document.getElementById('tab-search').hidden = tab !== 'search';
     document.getElementById('tab-pattern').hidden = tab !== 'pattern';
+    document.getElementById('tab-recommend').hidden = tab !== 'recommend';
     if (tab === 'pattern' && root.GBF_PATTERN) requestAnimationFrame(() => root.GBF_PATTERN.refresh());
     if (tab === 'trehun' && root.GBF_TREHUN) root.GBF_TREHUN.fit();
   }
@@ -92,6 +93,7 @@
     root.GBF_GW.mount(app);
     root.GBF_SEARCH.mount(app);
     root.GBF_PATTERN.mount(app);
+    root.GBF_RECOMMEND.mount(app);
     if (app.state.tab === 'trehun') root.GBF_TREHUN.fit();
     updateHeaderHeight();
     window.addEventListener('resize', updateHeaderHeight);

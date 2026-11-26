@@ -58,7 +58,7 @@ button:disabled { cursor: default; opacity: .35; }
   border-bottom: 2px solid var(--frame);
   box-shadow: 0 3px 8px rgba(0, 0, 0, .45);
 }
-.tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; }
+.tabs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; }
 .tile {
   position: relative; display: flex; align-items: center; justify-content: center; gap: 6px;
   height: 42px; padding: 0 8px; border-radius: 5px;
@@ -74,6 +74,7 @@ button:disabled { cursor: default; opacity: .35; }
 .tile-pattern { background: radial-gradient(circle at 70% 20%, #e7c8ff, transparent 45%), linear-gradient(135deg, #3c4a8a, #1c2148); }
 .tile-search { background: radial-gradient(circle at 25% 25%, #b8f0d0, transparent 45%), linear-gradient(135deg, #2f8a6a, #164a3a); }
 .tile-gw { background: radial-gradient(circle at 75% 25%, #ffc48a, transparent 45%), linear-gradient(135deg, #b5462c, #6a1f12); }
+.tile-recommend { background: radial-gradient(circle at 75% 20%, #fff0b8, transparent 45%), linear-gradient(135deg, #b8862e, #5e3a12); }
 .tile-trehun { background: radial-gradient(circle at 80% 20%, #ffd98a, transparent 45%), linear-gradient(135deg, #8a4fc2, #4a226f); }
 .tile:hover { filter: saturate(.95) brightness(.95); }
 .tile[aria-selected="true"] {
@@ -442,9 +443,8 @@ button.chip-item:hover { filter: brightness(1.08); }
 .tile { flex-direction: column; gap: 1px; height: 46px; padding: 2px 3px; }
 .tile-text { font-size: clamp(10.5px, 3.2vw, 13px); letter-spacing: -.3px; }
 .tile-icons img { width: 18px; height: 18px; }
-.tile-icons.mag { width: 18px; height: 18px; position: relative; }
-.tile-icons.mag::before { content: ""; position: absolute; left: 1px; top: 1px; width: 9px; height: 9px; border: 2.5px solid #fff3c4; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); }
-.tile-icons.mag::after { content: ""; position: absolute; left: 11px; top: 11px; width: 6px; height: 3px; background: #fff3c4; transform: rotate(45deg); transform-origin: left center; box-shadow: 0 0 0 1px rgba(0, 0, 0, .5); }
+.tile-icons.yt { width: 22px; height: 16px; margin: 1px 0; position: relative; border-radius: 4px; background: #ff0033; box-shadow: 0 0 0 1px rgba(0, 0, 0, .55); }
+.tile-icons.yt::before { content: ""; position: absolute; left: 8px; top: 4px; border-style: solid; border-width: 4px 0 4px 7px; border-color: transparent transparent transparent #fff; }
 
 /* ---------- 검색기 tab ---------- */
 .sr-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
@@ -677,3 +677,47 @@ button.chip-item:hover { filter: brightness(1.08); }
 .pt-debuff:hover, .pt-debuff:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
 /* Raid status icons (기운, 구슬, 법등 …) written as {@key} inside pattern text. */
 .tip-icon.pt-inline { display: inline-block; width: 16px; height: 16px; margin: 0 1px; vertical-align: -3px; }
+
+/* ---- 베인의 추천: in-game character profile card look ---- */
+.rc-card {
+  margin: 2px auto 0; max-width: 460px; border-radius: 8px; overflow: hidden;
+  border: 1px solid #1a0e07; box-shadow: 0 0 0 1px rgba(217, 183, 122, .35), 0 6px 14px rgba(0, 0, 0, .45);
+}
+.rc-hero {
+  height: 92px; display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(255, 250, 236, .95), transparent 62%),
+    repeating-linear-gradient(115deg, rgba(150, 110, 60, .07) 0 2px, transparent 2px 9px),
+    linear-gradient(180deg, #efe2c4, #dcc59a);
+}
+.rc-hero img {
+  width: 62px; height: 62px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #b08850; box-shadow: 0 0 0 2px #f6ecd6, 0 3px 8px rgba(70, 40, 10, .45);
+}
+.rc-ribbon {
+  position: relative; margin: 0; padding: 6px 28px; text-align: center;
+  font: 700 15px/1.3 "Noto Serif KR", "Nanum Myeongjo", "Batang", "AppleMyungjo", serif; letter-spacing: .5px; color: #f8eedb;
+  background: linear-gradient(180deg, #5b3b24, #33200f);
+  border-top: 2px solid #b08850; border-bottom: 2px solid #b08850;
+  box-shadow: inset 0 1px 0 rgba(255, 230, 180, .25), 0 2px 4px rgba(0, 0, 0, .5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+}
+.rc-ribbon::before, .rc-ribbon::after {
+  content: ""; position: absolute; top: 50%; width: 7px; height: 7px; margin-top: -4px;
+  background: #d9b77a; transform: rotate(45deg); box-shadow: 0 0 0 1px #4a2e17;
+}
+.rc-ribbon::before { left: 10px; }
+.rc-ribbon::after { right: 10px; }
+.rc-body {
+  padding: 14px 16px 16px; color: #f3ead8;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", "Batang", "AppleMyungjo", serif; line-height: 1.6;
+  background: linear-gradient(180deg, #3d2819, #291a10 70%, #21150c);
+  border-top: 1px solid rgba(0, 0, 0, .6);
+}
+.rc-item + .rc-item { margin-top: 13px; padding-top: 12px; border-top: 1px solid rgba(217, 183, 122, .2); }
+.rc-title { margin: 0; display: flex; align-items: center; gap: 5px; font-size: 14.5px; font-weight: 800; color: #fbe7b0; }
+.rc-star { color: var(--gold); font-size: 13px; }
+.rc-url { display: inline-block; margin-top: 1px; font-family: "Segoe UI", sans-serif; font-size: 11px; color: #d8c29a; text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+.rc-url:hover { color: var(--gold); }
+.rc-desc { margin: 4px 0 0; font-size: 13px; word-break: keep-all; }
+.rc-desc em { font-style: italic; font-weight: 800; color: #ffd98a; }

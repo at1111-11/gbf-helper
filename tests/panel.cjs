@@ -60,7 +60,18 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.deepEqual(broken, []);
     assert.equal(await page.locator('.tile-monthly .tile-icons img').evaluateAll(els => els.filter(e => getComputedStyle(e).display !== 'none').length), 3, '월간교환 tab shows 골드문 · 반홍 · 시드');
     assert.equal(await page.locator('.tile-pattern .tile-icons img').getAttribute('src'), 'img/raids/versusia.webp');
-    assert.deepEqual(await page.locator('.tile .tile-text').allInnerTexts().then(t => t.map(x => x.replace(/s+/g, ' ').trim())), ['월간교환', '레이드 탐색기', '고전장', '극성기 계산기', '패턴표']);
+    assert.deepEqual(await page.locator('.tile .tile-text').allInnerTexts().then(t => t.map(x => x.replace(/s+/g, ' ').trim())), ['월간교환', '레이드 탐색기', '고전장', '극성기 계산기', '패턴표', '베인의 추천']);
+    await expect(page.locator('.tile-search .tile-icons.yt')).toHaveCount(1); // YouTube-style icon
+    assert.equal(await page.locator('.tile-recommend .tile-icons img').getAttribute('src'), 'img/vane.webp');
+    await expect(page.locator('#tab-monthly .note')).toHaveCount(0); // usage note removed
+    await page.getByRole('tab', { name: '베인의 추천' }).click();
+    await expect(page.locator('#tab-recommend .rc-ribbon')).toHaveText('베인의 추천');
+    assert.deepEqual(await page.locator('#tab-recommend .rc-title').allInnerTexts().then(t => t.map(x => x.replace('★', '').trim())), ['GBF.WIKI', '루리아노트', 'GBFAL']);
+    assert.deepEqual(await page.locator('#tab-recommend .rc-url').evaluateAll(a => a.map(x => x.getAttribute('href'))), ['https://gbf.wiki/', 'https://lyria-note-korean.com/', 'https://mizagbf.github.io/GBFAL/index.html']);
+    await expect(page.locator('#tab-recommend .rc-desc em')).toHaveText('엄청나게');
+    assert.equal(await page.locator('#tab-recommend .rc-desc em').evaluate(e => getComputedStyle(e).fontStyle), 'italic');
+    assert.ok(await page.locator('#tab-recommend .rc-hero img').evaluate(i => i.complete && i.naturalWidth > 0), 'Vane picture loads');
+    await page.getByRole('tab', { name: '월간교환' }).click();
     checks.push('First open: no title sign, 6 shops with pictures, exchanged counts start at 0 of 골드문 2 · 반홍 710 · 시드 1,700, reset on the 1st at 05:00');
 
     // Nothing may move when items get checked.
@@ -625,7 +636,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await page.setViewportSize({ width: 360, height: 760 });
     for (const width of [300, 360, 480]) {
       await page.setViewportSize({ width, height: 760 });
-      for (const tab of ['고전장', '레이드 탐색기', '패턴표']) {
+      for (const tab of ['고전장', '레이드 탐색기', '패턴표', '베인의 추천']) {
         await page.getByRole('tab', { name: tab }).click();
         const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         assert.ok(over <= 0, `${tab} overflows by ${over}px at ${width}px`);
@@ -634,7 +645,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
       assert.deepEqual(clippedTabs, [], `tab names cut at ${width}px`);
     }
     await page.setViewportSize({ width: 360, height: 760 });
-    checks.push('고전장, 검색기, 패턴표 and the five tabs fit at 300/360/480px (no tab name cut)');
+    checks.push('고전장, 검색기, 패턴표 and the six tabs fit at 300/360/480px (no tab name cut)');
     assert.deepEqual(errors, []);
     assert.deepEqual(outside, [], 'the extension must not request anything outside itself');
     checks.push('No script errors and no network requests outside the extension');
