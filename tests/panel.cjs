@@ -62,16 +62,19 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.equal(await page.locator('.tile-pattern .tile-icons img').getAttribute('src'), 'img/raids/versusia.webp');
     assert.deepEqual(await page.locator('.tile .tile-text').allInnerTexts().then(t => t.map(x => x.replace(/s+/g, ' ').trim())), ['월간교환', '레이드 탐색기', '고전장', '극성기 계산기', '패턴표', '베인 노트']);
     await expect(page.locator('.tile-search .tile-icons.yt')).toHaveCount(1); // YouTube-style icon
-    assert.equal(await page.locator('.tile-recommend .tile-icons img').getAttribute('src'), 'img/vane.webp');
+    assert.equal(await page.locator('.tile-recommend .tile-icons img').getAttribute('src'), 'icons/icon48.png'); // the extension's own icon
     await expect(page.locator('#tab-monthly .note')).toHaveCount(0); // usage note removed
     await page.getByRole('tab', { name: '베인 노트' }).click();
     // One profile-style card per site: picture, title ribbon (★ except GBFAL), centered text. No page header.
     await expect(page.locator('#tab-recommend .rc-card')).toHaveCount(3);
     await expect(page.locator('#tab-recommend .rc-hero img[src="img/vane.webp"]')).toHaveCount(0);
-    assert.deepEqual(await page.locator('#tab-recommend .rc-ribbon').allTextContents().then(t => t.map(x => x.trim())), ['★GBF.WIKI', '★루리아노트', 'GBFAL']);
+    assert.deepEqual(await page.locator('#tab-recommend .rc-ribbon').allTextContents().then(t => t.map(x => x.trim())), ['★ GBF.WIKI', '★ 루리아노트', 'GBFAL']);
+    await expect(page.locator('#tab-recommend > .ribbon')).toHaveText('사이트'); // section line like the other tabs
+    assert.deepEqual(await page.locator('#tab-recommend .rc-ribbon a').evaluateAll(a => a.map(x => x.getAttribute('href'))), ['https://gbf.wiki/', 'https://lyria-note-korean.com/', 'https://mizagbf.github.io/GBFAL/index.html']); // the name is the link
+    await expect(page.locator('#tab-recommend .rc-url a, #tab-recommend a.rc-url')).toHaveCount(0); // address is plain text
+    assert.ok(await page.locator('#tab-recommend .rc-desc').evaluateAll(d => d.every(x => getComputedStyle(x).textAlign === 'center')), 'descriptions are centered');
     assert.ok(await page.locator('#tab-recommend .rc-hero img').evaluateAll(a => a.length === 3 && a.every(i => i.complete && i.naturalWidth > 0)), 'site pictures load');
     assert.equal(await page.locator('#tab-recommend .rc-body').first().evaluate(e => getComputedStyle(e).textAlign), 'center');
-    assert.deepEqual(await page.locator('#tab-recommend .rc-url').evaluateAll(a => a.map(x => x.getAttribute('href'))), ['https://gbf.wiki/', 'https://lyria-note-korean.com/', 'https://mizagbf.github.io/GBFAL/index.html']);
     await expect(page.locator('#tab-recommend .rc-desc em')).toHaveText('엄청나게');
     assert.equal(await page.locator('#tab-recommend .rc-desc em').evaluate(e => getComputedStyle(e).fontStyle), 'italic');
     await page.getByRole('tab', { name: '월간교환' }).click();

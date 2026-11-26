@@ -21,16 +21,21 @@
   function card(s) {
     return h('article', { class: 'rc-card' },
       h('div', { class: `rc-hero is-${s.hero} theme-${s.theme}`, 'aria-hidden': 'true' }, h('img', { src: s.img, alt: '' })),
-      h('h3', { class: 'rc-ribbon' }, s.star ? h('span', { class: 'rc-star', text: '★' }) : null, s.name),
+      // The name is the link ("★ 이름", one space after the star); the address below is plain text.
+      h('h3', { class: 'rc-ribbon' },
+        h('a', { class: 'rc-link', href: s.url, target: '_blank', rel: 'noopener noreferrer' },
+          s.star ? h('span', { class: 'rc-star', text: '★' }) : null, s.star ? ' ' : null, s.name)),
       h('div', { class: 'rc-body' },
         h('p', { class: 'rc-desc' }, desc(s.desc)),
-        h('a', { class: 'rc-url', href: s.url, target: '_blank', rel: 'noopener noreferrer', text: s.url })));
+        h('p', { class: 'rc-url', text: s.url })));
   }
 
   function render() {
     const host = document.getElementById('tab-recommend');
     if (!host) return;
-    host.replaceChildren(h('div', { class: 'rc-list' }, SITES.map(card)));
+    host.replaceChildren(
+      h('h2', { class: 'ribbon' }, h('span', { text: '사이트' })),
+      h('div', { class: 'rc-list' }, SITES.map(card)));
   }
 
   root.GBF_RECOMMEND = { SITES, mount() { render(); }, render };
