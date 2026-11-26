@@ -137,39 +137,55 @@ select.in option { background: #2a1910; }
 .empty { text-align: center; color: var(--muted); padding: 18px 8px; }
 
 /* ---------- Monthly tab ---------- */
-/* Fixed columns so changing numbers never push anything around. */
+/* Monthly totals: [icon] 1/2 on one line per kind, fixed equal columns so changing numbers never push anything around.
+   The countdown sits at the right on wide panels and on its own row (split by a line) on narrow ones. */
 .status {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px;
-  padding: 6px 10px; border-radius: 6px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 10px;
+  margin: 0 0 6px; padding: 5px 8px; border-radius: 6px;
   background: rgba(0, 0, 0, .3); border: 1px solid var(--frame);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .4);
 }
-.status-left { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; min-width: 0; }
-.stock {
-  display: grid; grid-template-columns: 22px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 4px;
-  align-items: center; white-space: nowrap; min-width: 0; overflow: hidden; line-height: 1.15;
-}
-.stock .item-ico { width: 22px; height: 22px; grid-row: 1 / 3; }
-.stock-num { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.stock small { color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+/* Fixed column shares sized for the longest value of each kind (2/2, 710/710, 1,700/1,700, 40/40). */
+.status-left { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.05fr) minmax(0, 1.37fr) minmax(0, .8fr); gap: 4px; min-width: 0; }
+.stock { display: flex; align-items: center; gap: 3px; white-space: nowrap; min-width: 0; overflow: hidden; line-height: 1.2; }
+.stock .item-ico { width: 17px; height: 17px; flex: none; }
+.stock-num { font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stock small { color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
 /* "리셋까지 5일 5시간" on one line, the date under it. Fixed width (fits the longest "30일 23시간" with room
    to spare) so the countdown never shifts the counts or touches the divider line. */
 .status-reset {
-  display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 1px;
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 0;
   width: 134px; padding-left: 12px; border-left: 1px solid rgba(217, 183, 122, .25);
   line-height: 1.2; white-space: nowrap; overflow: hidden;
 }
-/* Very narrow panel: the reset info gets its own row under the counts, split by a line above. */
-@media (max-width: 380px) {
-  .status { grid-template-columns: minmax(0, 1fr); row-gap: 5px; }
+@media (max-width: 560px) {
+  .status { grid-template-columns: minmax(0, 1fr); }
   .status-reset {
     width: auto; flex-direction: row; justify-content: space-between; align-items: baseline;
-    padding: 5px 0 0; border-left: 0; border-top: 1px solid rgba(217, 183, 122, .25);
+    padding: 4px 0 0; border-left: 0; border-top: 1px solid rgba(217, 183, 122, .25);
   }
 }
 .reset-line { display: flex; align-items: baseline; gap: 2px; }
 .status-reset small { font-size: 10px; color: var(--muted); }
 .status-reset b { font-size: 12.5px; color: var(--gold); font-variant-numeric: tabular-nums; }
+
+/* Weekly caps: three cells side by side — [icon ×50] chip, then the name and its 패스 / 2배 checkbox. */
+.weekly {
+  margin: 0 0 4px; padding: 6px 8px 5px; border-radius: 6px;
+  background: rgba(20, 10, 5, .45); border: 1px solid #1d110a; box-shadow: inset 0 0 0 1px rgba(217, 183, 122, .22);
+}
+.wk-cells { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.wk-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
+.wk-chip { justify-content: center; min-width: 0; max-width: 100%; }
+.wk-sub { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; white-space: nowrap; min-height: 16px; letter-spacing: -.3px; }
+.wk-name { font-weight: 800; color: var(--cream); }
+.wk-cell.done .wk-name { color: var(--muted); }
+.wk-note { color: var(--muted); font-size: 10px; }
+.wk-opt { display: inline-flex; align-items: center; gap: 2px; color: var(--muted); font-size: 10.5px; cursor: pointer; }
+.wk-opt input { width: 12px; height: 12px; margin: 0; accent-color: var(--gold); cursor: pointer; }
+.wk-reset { margin-top: 5px; padding-top: 4px; border-top: 1px solid rgba(217, 183, 122, .2); text-align: right; line-height: 1.2; white-space: nowrap; }
+.wk-reset small { font-size: 10px; color: var(--muted); }
+.wk-reset b { font-size: 12px; color: var(--gold); font-variant-numeric: tabular-nums; }
 
 .shops { display: flex; flex-direction: column; gap: 4px; }
 .shop {
@@ -661,7 +677,8 @@ button.chip-item:hover { filter: brightness(1.08); }
 .pt-gauge-row { display: grid; grid-template-columns: 40px 1fr; gap: 6px; align-items: center; font-size: 11px; line-height: 1.5; }
 .pt-gauge-chip { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; white-space: nowrap; }
 .pt-gauge-chip i { width: 14px; height: 7px; border-radius: 1px; background: var(--seg); box-shadow: 0 0 0 1px rgba(0, 0, 0, .7); }
-.pt-lines li.pt-reset { list-style: none; margin: 0 0 3px -15px; display: flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 800; color: #7a3a10; white-space: nowrap; letter-spacing: -.3px; }
+.pt-lines li.pt-reset { list-style: none; margin: 0 0 3px -15px; display: flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 800; color: #7a3a10; letter-spacing: -.3px; line-height: 1.25; }
+.pt-reset-k { white-space: nowrap; } /* "종말 카운트다운 리셋" / "· 18분 타임어택" break only between the two parts */
 .pt-lines li.pt-reset img { width: 40px; height: auto; display: block; flex: none; }
 .pt-memo-head {
   grid-column: 3; margin-top: 10px; padding: 3px 7px; border-radius: 0 4px 0 0;
@@ -742,4 +759,3 @@ button.chip-item:hover { filter: brightness(1.08); }
 }
 .rc-desc { margin: 0; font-size: 13.5px; text-align: center; word-break: keep-all; }
 .rc-desc em { font-style: normal; font-weight: 800; color: #ffd98a; }
-.rc-url { margin: 5px 0 0; font-size: 11px; color: #bba57f; text-align: center; overflow-wrap: anywhere; }

@@ -35,7 +35,7 @@
     return h('span', { class: 'pt-icons' + (cls ? ' ' + cls : '') }, keys.map(k => P.ICONS[k] ? tipIcon(P.ICONS[k]) : null));
   }
 
-  // "시작할 때" box. A boss with a gauge (루시제로's 디 엔드 게이지) shows the in-game bar at the top right
+  // "시작할 때" box. A boss with a gauge (루시제로's 종말 카운트다운) shows the in-game bar at the top right
   // and, under the lines, what the boss gains as segments run out (one row per segment, coloured like the bar).
   function opening(o) {
     const g = o.gauge;
@@ -76,7 +76,8 @@
   function line(l) {
     if (typeof l === 'string') return h('li', null, rich(l));
     if (l.head) return h('li', { class: 'pt-lhead', text: l.head });
-    if (l.reset) return h('li', { class: 'pt-reset' }, h('img', { src: 'img/icons/the-end-gauge.png', alt: '' }), `디 엔드 ${l.start ? '시작' : '리셋'} · ${l.reset} 타임어택`);
+    if (l.reset) return h('li', { class: 'pt-reset' }, h('img', { src: 'img/icons/the-end-gauge.png', alt: '' }),
+      h('span', null, h('span', { class: 'pt-reset-k', text: `종말 카운트다운 ${l.start ? '시작' : '리셋'}` }), ' ', h('span', { class: 'pt-reset-k', text: `· ${l.reset} 타임어택` })));
     if (l.ct) return h('li', { class: 'pt-lhead' }, h('span', { class: 'pt-tag is-ct', text: 'CT' }), ' ' + l.ct);
     if (l.k) return h('li', { class: 'pt-kv' }, h('b', { text: l.k }), h('span', null, rich(l.v)));
     return h('li', { class: 'pt-sub' },

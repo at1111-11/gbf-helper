@@ -33,8 +33,29 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
 
     const stock = kind => page.locator(`.stock-num[data-kind="${kind}"]`).innerText();
     const totals = () => page.locator('.stock small').allInnerTexts();
-    assert.deepEqual([await stock('gold'), await stock('half'), await stock('seed')], ['0', '0', '0']);
-    assert.deepEqual(await totals(), ['/2', '/710', '/1,700']);
+    assert.deepEqual([await stock('gold'), await stock('half'), await stock('seed'), await stock('quartz')], ['0', '0', '0', '0']);
+    assert.deepEqual(await totals(), ['/2', '/710', '/1,700', '/40']);
+    // Order: 주간 교환 → weekly box → 월간 교환 → totals box → shops. Each total is one line ([icon] 0/2).
+    assert.deepEqual(await page.locator('#tab-monthly > *').evaluateAll(els => els.slice(0, 5).map(e => e.classList[0])), ['ribbon', 'weekly', 'ribbon', 'status', 'shops']);
+    assert.deepEqual(await page.locator('#tab-monthly > .ribbon').allInnerTexts(), ['주간 교환', '월간 교환']);
+    assert.ok(await page.locator('.stock').evaluateAll(s => s.every(x => { const n = x.querySelector('.stock-num').getBoundingClientRect(), t = x.querySelector('small').getBoundingClientRect(); return Math.abs(n.top + n.height / 2 - (t.top + t.height / 2)) < 4; })), 'each total reads on one line');
+    // Weekly: 아티팩트 50 (패스 75), FP 5,000 (2배 10,000), 보정석 100; checking marks it done; options stay after reload.
+    const wq = () => page.locator('.wk-chip .chip-qty').allInnerTexts();
+    assert.deepEqual(await wq(), ['×50', '×5,000', '×100']);
+    await page.locator('.wk-opt input[data-opt="pass"]').check();
+    await page.locator('.wk-opt input[data-opt="double"]').check();
+    assert.deepEqual(await wq(), ['×75', '×10,000', '×100']);
+    await page.locator('.wk-cell[data-id="crystal"] .wk-chip').click();
+    await expect(page.locator('.wk-cell[data-id="crystal"]')).toHaveClass(/done/);
+    await expect(page.locator('#weekLeft')).toHaveText(/^\d+(일 \d+시간|시간 \d+분|분)$/);
+    await page.reload(); await ready();
+    assert.deepEqual(await wq(), ['×75', '×10,000', '×100']);
+    await expect(page.locator('.wk-cell[data-id="crystal"]')).toHaveClass(/done/);
+    await page.locator('.wk-opt input[data-opt="pass"]').uncheck();
+    await page.locator('.wk-opt input[data-opt="double"]').uncheck();
+    await page.locator('.wk-cell[data-id="crystal"] .wk-chip').click();
+    await expect(page.locator('#tab-monthly .shop[data-group="sandbox"] .chip-qty')).toHaveText(['×20', '×20']);
+    checks.push('주간 교환 (아티팩트 50/패스 75 · FP 5,000/2배 10,000 · 보정석 100) above 월간 교환; monthly totals box under 월간 교환 with one-line [icon] n/total incl. 샌드박스 쿼츠 40');
     await expect(page.locator('#resetAt')).toHaveText(/^\d+\/1\(.\) 05:00$/);
     await expect(page.locator('.reset-line')).toHaveText(/^리셋까지 \d+(일 \d+시간|시간 \d+분|분)$/);
     // Even the longest countdown fits its box and keeps clear of the divider line, at panel and website widths.
@@ -54,7 +75,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
       assert.ok(fit, `reset countdown fits clear of the divider at ${w}px`);
     }
     await page.setViewportSize({ width: 360, height: 760 });
-    assert.deepEqual(await page.locator('#tab-monthly .shop').evaluateAll(els => els.map(e => e.dataset.group)), ['fp', 'pendant', 'casino', 'skyleap', 'daily', 'treasure']);
+    assert.deepEqual(await page.locator('#tab-monthly .shop').evaluateAll(els => els.map(e => e.dataset.group)), ['fp', 'pendant', 'casino', 'skyleap', 'daily', 'treasure', 'sandbox']);
     assert.equal(await page.locator('.sign').count(), 0);
     const broken = await page.locator('img').evaluateAll(imgs => imgs.filter(i => !i.complete || !i.naturalWidth).map(i => i.src));
     assert.deepEqual(broken, []);
@@ -71,7 +92,8 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.deepEqual(await page.locator('#tab-recommend .rc-ribbon').allTextContents().then(t => t.map(x => x.trim())), ['★ GBF.WIKI', '★ 루리아노트', 'GBFAL']);
     await expect(page.locator('#tab-recommend > .ribbon')).toHaveText('사이트'); // section line like the other tabs
     assert.deepEqual(await page.locator('#tab-recommend .rc-ribbon a').evaluateAll(a => a.map(x => x.getAttribute('href'))), ['https://gbf.wiki/', 'https://lyria-note-korean.com/', 'https://mizagbf.github.io/GBFAL/index.html']); // the name is the link
-    await expect(page.locator('#tab-recommend .rc-url a, #tab-recommend a.rc-url')).toHaveCount(0); // address is plain text
+    await expect(page.locator('#tab-recommend .rc-url')).toHaveCount(0); // the name link is enough, no address line
+    assert.ok(await page.locator('#tab-recommend .rc-desc').allInnerTexts().then(t => t.every(x => !x.trim().endsWith('.'))), 'no trailing period');
     assert.ok(await page.locator('#tab-recommend .rc-desc').evaluateAll(d => d.every(x => getComputedStyle(x).textAlign === 'center')), 'descriptions are centered');
     assert.ok(await page.locator('#tab-recommend .rc-hero img').evaluateAll(a => a.every(i => i.complete && i.naturalWidth > 0)), 'site pictures load');
     // Each picture sits in a round frame (the user preferred circles to pictures filling the whole box).
@@ -119,18 +141,18 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await kindsOf('treasure-half').fill('300');
     await kindsOf('treasure-half').evaluate(e => e.blur());
     await expect(kindsOf('treasure-half')).toHaveValue('260');
-    assert.deepEqual(await totals(), ['/2', '/710', '/1,700'], 'typing without Enter changes nothing');
+    assert.deepEqual(await totals(), ['/2', '/710', '/1,700', '/40'], 'typing without Enter changes nothing');
     await kindsOf('treasure-half').fill('300');
     await kindsOf('treasure-half').press('Enter');
     await expect(kindsOf('treasure-half')).toHaveValue('300');
-    assert.deepEqual(await totals(), ['/2', '/750', '/1,700']);
+    assert.deepEqual(await totals(), ['/2', '/750', '/1,700', '/40']);
     await kindsOf('treasure-seed').fill('99');
     await kindsOf('treasure-seed').press('Enter');
     await expect(kindsOf('treasure-seed')).toHaveValue('13');
     await kindsOf('treasure-seed').fill('5');
     await kindsOf('treasure-seed').press('Enter');
     await expect(kindsOf('treasure-seed')).toHaveValue('5');
-    assert.deepEqual(await totals(), ['/2', '/750', '/1,300']);    await expect(page.locator('.tip')).toBeHidden();
+    assert.deepEqual(await totals(), ['/2', '/750', '/1,300', '/40']);    await expect(page.locator('.tip')).toBeHidden();
     await page.locator('#tab-monthly .hint-mark').hover();
     await expect(page.locator('.tip')).toBeVisible();
     const markBox = await page.locator('#tab-monthly .hint-mark').boundingBox();
@@ -161,7 +183,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.equal(await page.locator('img[src="x"]').count(), 0);
     await expect(page.locator('[data-id="skyleap-half"]')).toHaveCount(0);
     assert.equal(await stock('half'), '100'); // casino done
-    assert.deepEqual(await totals(), ['/2', '/650', '/1,300']); // skyleap 반홍 hidden
+    assert.deepEqual(await totals(), ['/2', '/650', '/1,300', '/40']); // skyleap 반홍 hidden
     assert.ok(!/\bnull\b|undefined/.test(await page.locator('main').innerText()), 'no stray null/undefined text');
     checks.push('Edit: a custom item is added (name shown as plain text) and a hidden item leaves the list and totals');
     await page.screenshot({ path: path.join(out, 'monthly.png') });
@@ -549,7 +571,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.ok(await page.locator('.pt-memo-text').evaluateAll(a => a.length >= 6 && a.every(x => !x.value)), '루시제로 memo is separate (empty)');
     await expect(page.locator('.pt-opening')).toContainText('공격 DOWN·방어 DOWN 무효');
     await expect(page.locator('.pt-opening')).not.toContainText('리셋'); // reset points live in the pattern list
-    assert.deepEqual(await page.locator('.pt-reset').allInnerTexts(), ['디 엔드 시작 · 9분 타임어택', '디 엔드 리셋 · 9분 타임어택', '디 엔드 리셋 · 18분 타임어택', '디 엔드 리셋 · 9분 타임어택']);
+    assert.deepEqual(await page.locator('.pt-reset').allInnerTexts(), ['종말 카운트다운 시작 · 9분 타임어택', '종말 카운트다운 리셋 · 9분 타임어택', '종말 카운트다운 리셋 · 18분 타임어택', '종말 카운트다운 리셋 · 9분 타임어택']);
     await expect(page.locator('.pt-card', { hasText: '묵시록의 나팔' })).toContainText('첫 진입자에 한해 보스 약체 리셋');
     await expect(page.locator('.pt-card', { hasText: '묵시록의 나팔' })).toContainText('HP가 10%보다 낮아지지 않음 (20%에서 자기 속성 시련을 클리어하면 해제)');
     await expect(page.locator('#tab-pattern')).not.toContainText('멈춤');
@@ -557,8 +579,8 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.ok(gauge.ok && gauge.right < 14 && gauge.top < 20, 'gauge picture sits at the top right of 시작할 때: ' + JSON.stringify(gauge));
     assert.deepEqual(await page.locator('.pt-gauge-chip').allInnerTexts(), ['6칸', '5칸', '4칸', '3칸', '2칸', '1칸']);
     await expect(page.locator('.pt-gauge-levels')).toContainText('방어 무시');
-    const resetFits = await page.locator('.pt-reset').evaluateAll(ls => ls.every(l => l.scrollWidth <= l.closest('.pt-card').clientWidth && l.getBoundingClientRect().height <= 18));
-    assert.ok(resetFits, 'reset badges stay on one line inside their card');
+    const resetFits = await page.locator('.pt-reset').evaluateAll(ls => ls.every(l => l.scrollWidth <= l.closest('.pt-card').clientWidth && l.getBoundingClientRect().height <= 30 && [...l.querySelectorAll('.pt-reset-k')].every(k => k.getClientRects().length === 1)));
+    assert.ok(resetFits, 'reset badges stay inside their card and only break between "종말 카운트다운 리셋" and "· n분 타임어택"');
     await expect(page.locator('.pt-opening')).toContainText('전조 실패 시 -1분');
     await expect(page.locator('.pt-card', { hasText: '세피로트' }).first()).toContainText('80%에서 파라다이스 로스트');
     for (const ct of await page.locator('.pt-card.k-ct').all()) {

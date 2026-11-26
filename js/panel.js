@@ -26,6 +26,7 @@
       state.v = 2;
     }
     state.monthly = C.normalizeMonthly(state.monthly);
+    state.weekly = C.normalizeWeekly(state.weekly);
     state.trehun = Object.assign({}, D.TREHUN_DEFAULTS, state.trehun || {});
     // The 극성기 rate is fixed and the box rate is one of the HELL presets.
     state.trehun.itemBase = D.ITEM_RATE;
@@ -47,14 +48,22 @@
   }
 
   function checkReset(showNotice) {
-    const result = C.applyMonthlyReset(app.state.monthly, new Date());
+    const now = new Date();
+    let changed = false;
+    const result = C.applyMonthlyReset(app.state.monthly, now);
     if (result.state.period !== app.state.monthly.period || result.didReset) {
       app.state.monthly = result.state;
-      app.save();
+      changed = true;
       if (result.didReset && showNotice) toast('새 달이 시작돼서 월간교환 체크를 풀었어요');
-      return true;
     }
-    return false;
+    const week = C.applyWeeklyReset(app.state.weekly, now);
+    if (week.state.period !== app.state.weekly.period || week.didReset) {
+      app.state.weekly = week.state;
+      changed = true;
+      if (week.didReset && showNotice && !result.didReset) toast('새 주가 시작돼서 주간교환 체크를 풀었어요');
+    }
+    if (changed) app.save();
+    return changed;
   }
 
   function showTab(tab) {

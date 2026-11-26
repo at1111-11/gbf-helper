@@ -1,4 +1,4 @@
-// Monthly exchange checklist tab: one compact row per shop, one chip per item.
+// 월간교환 tab: weekly caps on top, then the monthly exchange checklist (one compact row per shop, one chip per item).
 (function (root) {
   const { h, toast, num, confirmButton } = root.GBF_UI;
   const D = root.GBF_DATA;
@@ -26,13 +26,14 @@
     return img ? h('img', { class: 'item-ico', src: img, alt: '' }) : h('i', { class: 'item-ico other' });
   }
 
+  // Monthly totals on one line ([icon] 1/2 …), the countdown to the next monthly reset beside or under them.
   function statusBar(groups) {
     const now = new Date();
     const next = C.nextReset(now);
     const p = C.jstParts(next);
     const { left, total } = C.remaining(groups);
     return h('div', { class: 'status' },
-      h('div', { class: 'status-left' }, ['gold', 'half', 'seed'].map(kind =>
+      h('div', { class: 'status-left' }, ['gold', 'half', 'seed', 'quartz'].map(kind =>
         h('span', { class: `stock kind-${kind}`, title: `${D.KINDS[kind].full} · 이번 달 교환한 수량` },
           itemIcon(kind),
           h('b', { class: 'stock-num', dataset: { kind }, text: num(total[kind] - left[kind], 0) }),
@@ -40,6 +41,37 @@
       h('div', { class: 'status-reset', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
         h('span', { class: 'reset-line' }, h('small', { text: '리셋까지 ' }), h('b', { id: 'resetLeft', text: C.formatLeft(next - now).replace(' 남음', '') })),
         h('small', { id: 'resetAt', text: `${p.month}/${p.day}(${WEEKDAYS[p.weekday]}) 05:00` })));
+  }
+
+  // ---- Weekly caps ----
+  function w() { return app.state.weekly; }
+  function weeklyQty(x) { return x.up && w().opts[x.up.key] ? x.up.qty : x.qty; }
+
+  function weeklySection() {
+    const now = new Date();
+    const next = C.nextWeeklyReset(now);
+    const p = C.jstParts(next);
+    const cell = x => {
+      const done = !!w().done[x.id];
+      const qty = weeklyQty(x);
+      return h('div', { class: 'wk-cell' + (done ? ' done' : ''), dataset: { id: x.id } },
+        h('button', {
+          type: 'button', class: 'chip-item wk-chip' + (done ? ' done' : ''), title: x.tip,
+          'aria-pressed': done ? 'true' : 'false', 'aria-label': `${x.name} ${num(qty, 0)} ${done ? '완료' : '진행 전'}`,
+          onclick: () => { if (done) delete w().done[x.id]; else w().done[x.id] = true; commit(); }
+        }, h('img', { class: 'item-ico', src: x.img, alt: '' }), h('span', { class: 'chip-qty', text: `×${num(qty, 0)}` })),
+        h('div', { class: 'wk-sub' },
+          h('span', { class: 'wk-name', text: x.name }),
+          x.up ? h('label', { class: 'wk-opt', title: x.tip },
+            h('input', { type: 'checkbox', checked: !!w().opts[x.up.key], dataset: { opt: x.up.key },
+              onchange: e => { w().opts[x.up.key] = e.target.checked; commit(); } }),
+            x.up.label) : h('span', { class: 'wk-note', text: x.note || '' })));
+    };
+    return h('section', { class: 'weekly' },
+      h('div', { class: 'wk-cells' }, D.WEEKLY.map(cell)),
+      h('div', { class: 'wk-reset', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
+        h('small', { text: '리셋까지 ' }), h('b', { id: 'weekLeft', text: C.formatLeft(next - now).replace(' 남음', '') }),
+        h('small', { text: ` · 매주 월 05:00` })));
   }
 
   function chip(i) {
@@ -230,8 +262,10 @@
     const groups = C.resolveGroups(D.GROUPS, m(), D.KINDS);
     const rows = editing ? groups.map(editShop) : groups.map(shopRow).filter(Boolean);
     host.replaceChildren(...[
-      statusBar(groups),
+      editing ? null : h('h2', { class: 'ribbon' }, h('span', { text: '주간 교환' })),
+      editing ? null : weeklySection(),
       h('h2', { class: 'ribbon' }, h('span', { text: editing ? '교환소 편집' : '월간 교환' })),
+      editing ? null : statusBar(groups),
       h('div', { class: editing ? 'edit-list' : 'shops' }, rows.length ? rows : h('p', { class: 'empty', text: '표시할 교환소가 없어요. [편집]에서 숨긴 항목을 되돌릴 수 있어요.' })),
       editing ? editFooter() : null,
       h('div', { class: 'footer' },
@@ -247,6 +281,8 @@
   function tick() {
     const left = document.getElementById('resetLeft');
     if (left) left.textContent = C.formatLeft(C.nextReset(new Date()) - new Date()).replace(' 남음', '');
+    const week = document.getElementById('weekLeft');
+    if (week) week.textContent = C.formatLeft(C.nextWeeklyReset(new Date()) - new Date()).replace(' 남음', '');
   }
 
   root.GBF_MONTHLY = {

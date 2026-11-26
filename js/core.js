@@ -15,6 +15,38 @@
     return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1, -4));
   }
 
+  // Weekly limits reset every Monday 05:00 JST. With the same +4h shift that moment is Monday 00:00 UTC.
+  function weekStart(now) {
+    const d = new Date(now.getTime() + RESET_SHIFT);
+    const day = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    return new Date(day - ((d.getUTCDay() + 6) % 7) * 24 * HOUR);
+  }
+  function weekKey(now) {
+    const s = weekStart(now);
+    return s.getUTCFullYear() + '-' + String(s.getUTCMonth() + 1).padStart(2, '0') + '-' + String(s.getUTCDate()).padStart(2, '0');
+  }
+  function nextWeeklyReset(now) {
+    return new Date(weekStart(now).getTime() + 7 * 24 * HOUR - RESET_SHIFT);
+  }
+  // Weekly checklist: done ids reset each week; the 패스 / 2배 options stay.
+  function normalizeWeekly(w) {
+    const src = w || {};
+    return {
+      period: typeof src.period === 'string' ? src.period : null,
+      done: Object.assign({}, src.done),
+      opts: Object.assign({}, src.opts)
+    };
+  }
+  function applyWeeklyReset(w, now) {
+    const state = normalizeWeekly(w);
+    const key = weekKey(now);
+    if (state.period === key) return { state, didReset: false };
+    const hadPeriod = state.period !== null;
+    state.period = key;
+    state.done = {};
+    return { state, didReset: hadPeriod };
+  }
+
   // Parts of a Date as seen in Japan/Korea time (both UTC+9).
   function jstParts(date) {
     const d = new Date(date.getTime() + 9 * HOUR);
@@ -124,8 +156,8 @@
   }
 
   function remaining(groups) {
-    const left = { gold: 0, half: 0, seed: 0, other: 0 };
-    const total = { gold: 0, half: 0, seed: 0, other: 0 };
+    const left = { gold: 0, half: 0, seed: 0, quartz: 0, other: 0 };
+    const total = { gold: 0, half: 0, seed: 0, quartz: 0, other: 0 };
     for (const g of groups) {
       for (const i of g.items) {
         if (i.hidden) continue;
@@ -227,7 +259,7 @@
       : { winner: 'b', diff: pb - pa, perHour: [pa, pb] };
   }
   const core = {
-    TOTAL_CAP, periodKey, nextReset, jstParts, formatLeft, emptyMonthly, normalizeMonthly,
+    TOTAL_CAP, periodKey, nextReset, weekKey, nextWeeklyReset, normalizeWeekly, applyWeeklyReset, jstParts, formatLeft, emptyMonthly, normalizeMonthly,
     applyMonthlyReset, resolveGroups, clampKinds, clampQty, kindsFor, korNum, parseTime, honorPerHour, compareSpeed, remaining, calcDrop, runsForChance, round4, findOption
   };
   root.GBF_CORE = core;

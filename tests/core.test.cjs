@@ -43,18 +43,40 @@ test('new month clears checks but keeps the user list settings', () => {
   assert.deepEqual(next.state.overrides, { 'fp-half': { qty: 90 } });
 });
 
+test('weekly reset is Monday 05:00 JST; checks clear, 패스 / 2배 options stay', () => {
+  assert.equal(C.weekKey(new Date('2026-11-29T19:59:59Z')), '2026-11-23'); // Mon 30 Nov 04:59 JST
+  assert.equal(C.weekKey(new Date('2026-11-29T20:00:00Z')), '2026-11-30'); // Mon 30 Nov 05:00 JST
+  assert.equal(C.nextWeeklyReset(new Date('2026-11-26T12:00:00Z')).toISOString(), '2026-11-29T20:00:00.000Z');
+  assert.equal(C.nextWeeklyReset(new Date('2026-11-29T20:00:00Z')).toISOString(), '2026-12-06T20:00:00.000Z');
+  const first = C.applyWeeklyReset({}, new Date('2026-11-26T12:00:00Z'));
+  assert.equal(first.didReset, false);
+  const w = Object.assign(first.state, { done: { fp: true }, opts: { pass: true } });
+  assert.deepEqual(C.applyWeeklyReset(w, new Date('2026-11-29T19:00:00Z')).state.done, { fp: true });
+  const next = C.applyWeeklyReset(w, new Date('2026-11-29T20:00:00Z'));
+  assert.equal(next.didReset, true);
+  assert.deepEqual(next.state.done, {});
+  assert.deepEqual(next.state.opts, { pass: true });
+  assert.deepEqual(D.WEEKLY.map(x => [x.id, x.qty, x.up && x.up.qty]), [['artifact', 50, 75], ['fp', 5000, 10000], ['crystal', 100, undefined]]);
+  for (const x of D.WEEKLY) assert.ok(fs.existsSync(path.join(__dirname, '..', x.img)), x.id + ' icon');
+});
+
+test('sandbox monthly quartz is 40 (missions 20 + trades 20)', () => {
+  const g = D.GROUPS.find(x => x.id === 'sandbox');
+  assert.equal(g.items.reduce((s, i) => s + i.qty, 0), 40);
+});
+
 test('alchemy lab is not part of the list', () => {
   assert.ok(!D.GROUPS.some(g => g.id === 'alchemy'));
   for (const g of D.GROUPS) assert.ok(g.img && require('node:fs').existsSync(path.join(__dirname, '..', g.img)), g.id + ' picture');
-  for (const k of ['gold', 'half', 'seed']) assert.ok(fs.existsSync(path.join(__dirname, '..', D.KINDS[k].img)));
+  for (const k of ['gold', 'half', 'seed', 'quartz']) assert.ok(fs.existsSync(path.join(__dirname, '..', D.KINDS[k].img)));
 });
 
 test('checklist totals and remaining amounts', () => {
   const m = C.normalizeMonthly({ progress: { 'fp-gold': 1, 'casino-seed': 1 } });
   const groups = C.resolveGroups(D.GROUPS, m, D.KINDS);
   const { left, total } = C.remaining(groups);
-  assert.deepEqual(total, { gold: 2, half: 710, seed: 1700, other: 0 });
-  assert.deepEqual(left, { gold: 1, half: 710, seed: 1500, other: 0 });
+  assert.deepEqual(total, { gold: 2, half: 710, seed: 1700, quartz: 40, other: 0 });
+  assert.deepEqual(left, { gold: 1, half: 710, seed: 1500, quartz: 40, other: 0 });
   assert.equal(groups.find(g => g.id === 'fp').items[0].name, '골드문');
 });
 
@@ -71,7 +93,7 @@ test('treasure trades: 반홍 total written by the user, 시드 = 50 × kinds', 
   assert.equal(set.half.qty, 300);
   assert.equal(set.seed.kinds, 5);
   assert.equal(set.seed.qty, 250);
-  assert.deepEqual(set.sum.total, { gold: 2, half: 450 + 300, seed: 1050 + 250, other: 0 });
+  assert.deepEqual(set.sum.total, { gold: 2, half: 450 + 300, seed: 1050 + 250, quartz: 40, other: 0 });
   const done = pick({ userQty: { 'treasure-half': 300 }, progress: { 'treasure-half': 1 } });
   assert.equal(done.half.complete, true);
   assert.equal(done.sum.left.half, 450);

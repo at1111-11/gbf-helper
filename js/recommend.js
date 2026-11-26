@@ -8,7 +8,7 @@
   // desc: plain text, with *word* drawn bold.
   const SITES = [
     { name: 'GBF.WIKI', star: true, url: 'https://gbf.wiki/', img: 'img/notes/gbf-wiki.webp', fit: 'logo', theme: 'sky',
-      desc: '정보량이 *엄청나게* 많은 서양권 위키.' },
+      desc: '정보량이 *엄청나게* 많은 서양권 위키' },
     { name: '루리아노트', star: true, url: 'https://lyria-note-korean.com/', img: 'img/notes/lyria-note-face.webp', bg: 'img/notes/lyria-note.webp', fit: 'art', theme: 'meadow',
       desc: '인게임정보 한국어화를 진행중인 팬사이트' },
     { name: 'GBFAL', star: false, url: 'https://mizagbf.github.io/GBFAL/index.html', img: 'img/notes/gbfal.webp', fit: 'logo', theme: 'pink',
@@ -24,13 +24,12 @@
       h('div', { class: `rc-hero theme-${s.theme}`, 'aria-hidden': 'true' },
         s.bg ? h('img', { class: 'rc-bg', src: s.bg, alt: '' }) : null,
         h('span', { class: `rc-portrait is-${s.fit}` }, h('img', { src: s.img, alt: '' }))),
-      // The name is the link ("★ 이름", one space after the star); the address below is plain text.
+      // The name is the link ("★ 이름", one space after the star); no separate address line.
       h('h3', { class: 'rc-ribbon' },
         h('a', { class: 'rc-link', href: s.url, target: '_blank', rel: 'noopener noreferrer' },
           s.star ? h('span', { class: 'rc-star', text: '★' }) : null, s.star ? ' ' : null, s.name)),
       h('div', { class: 'rc-body' },
-        h('p', { class: 'rc-desc' }, desc(s.desc)),
-        h('p', { class: 'rc-url', text: s.url })));
+        h('p', { class: 'rc-desc' }, desc(s.desc))));
   }
 
   function render() {

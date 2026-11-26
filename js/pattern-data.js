@@ -179,8 +179,8 @@
       opening: { icons: [], lines: [
         '타속성 캐릭터 사망 (부활 불가)',
         '보스는 공격 DOWN·방어 DOWN 무효',
-        '디 엔드 게이지(종말 카운트다운): 시간이 지나면 줄어듦 · 전조 실패 시 -1분 · 사망 시 최대치 -1분 (제1~6절 실패도 최대치 감소) · 0이 되면 전원 사망'],
-        gauge: { label: '디 엔드 게이지', img: 'img/icons/the-end-gauge.png', title: '남은 칸별 보스 강화 (칸이 줄수록 누적)', levels: [
+        '종말 카운트다운(디 엔드 게이지): 시간이 지나면 줄어듦 · 전조 실패 시 -1분 · 사망 시 최대치 -1분 (제1~6절 실패도 최대치 감소) · 0이 되면 전원 사망'],
+        gauge: { label: '종말 카운트다운(디 엔드 게이지)', img: 'img/icons/the-end-gauge.png', title: '남은 칸별 보스 강화 (칸이 줄수록 누적)', levels: [
           { left: 6, color: '#ebe9e3', text: '강화 없음' },
           { left: 5, color: '#f2eac1', text: '추가 피해 1000' },
           { left: 4, color: '#fbea58', text: '추가 피해 2000 · 필중 · 속성 컷 무시' },

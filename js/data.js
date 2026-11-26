@@ -8,6 +8,7 @@
     gold: { label: '골드문', full: '골드문 (金月)', img: 'img/item-gold.webp' },
     half: { label: '반홍', full: '하프 엘릭서 (AP 75 회복)', img: 'img/item-half.webp' },
     seed: { label: '시드', full: '소울 시드 (BP 1 회복)', img: 'img/item-seed.webp' },
+    quartz: { label: '쿼츠', full: '신세계 쿼츠 (New World Quartz)', img: 'img/item-quartz.webp' },
     other: { label: '기타', full: '직접 추가한 항목', img: '' }
   };
 
@@ -55,7 +56,24 @@
         { id: 'treasure-half', kind: 'half', qty: 260, userTotal: true, cost: '트레저 10개당 1개 · 코옵 호스트 퀘스트 교환도 가능' },
         { id: 'treasure-seed', kind: 'seed', qty: 50, perKind: true, cost: '트레저 4개당 1개 · 종류마다 50개' }
       ]
+    },
+    {
+      // Replicard Sandbox monthly event (gbf.wiki, November 2026): 4 missions × 5 + 2 Denas shops × 10 = 40.
+      id: 'sandbox', name: '샌드박스', sub: '리플리카드 샌드박스 월간', img: 'img/shop-sandbox.webp',
+      items: [
+        { id: 'sandbox-mission', kind: 'quartz', qty: 20, cost: '월간 미션 4개 × 5개' },
+        { id: 'sandbox-trade', kind: 'quartz', qty: 20, cost: '디나스 교환소 2곳 × 10개' }
+      ]
     }
+  ];
+
+  // Weekly caps (reset every Monday 05:00). up: a checkbox that raises the number.
+  // 아티팩트: drop-rate boost for the first 50 artifacts a week, 75 with the Premium Pass (gbf.wiki Premium Pass).
+  // FP: weekly cap 5,000, doubled during FP campaigns (gbf.wiki FP). 보정석: weekly quest reward (user).
+  const WEEKLY = [
+    { id: 'artifact', name: '아티팩트', img: 'img/item-artifact.webp', qty: 50, up: { key: 'pass', label: '패스', qty: 75 }, tip: '아티팩트 드롭률 대폭 UP 상한 (프리미엄 패스면 75)' },
+    { id: 'fp', name: 'FP', img: 'img/item-fp.webp', qty: 5000, up: { key: 'double', label: '2배', qty: 10000 }, tip: '주간 FP 획득 상한 (2배 이벤트면 10,000)' },
+    { id: 'crystal', name: '보정석', img: 'img/item-crystal.webp', qty: 100, note: '주간 퀘스트', tip: '주간 퀘스트 보정석' }
   ];
 
   // Treasure hunt (트헌) calculator tables.
@@ -151,7 +169,7 @@
     dark: { 90: T('루오 솔로', 'luwoh', '74.0%'), 95: T('루오 솔로', 'luwoh', '31.6%'), 100: T('루오 레이드', 'luwoh', '39.8%'), 150: T('루오 레이드', 'luwoh', '32.7%', '24.8%', ['50%', '50%']) }
   };
   const data = {
-    SOURCE_DATE, KINDS, GROUPS, TREHUN_LEVELS, TEARS, WEAPONS, MY_STONES, FRIEND_STONES, PARTY_IMG,
+    SOURCE_DATE, KINDS, GROUPS, WEEKLY, TREHUN_LEVELS, TEARS, WEAPONS, MY_STONES, FRIEND_STONES, PARTY_IMG,
     BOX_PRESETS, ITEM_RATE, TREASURE_KINDS_MAX, STELLAR, TREHUN_DEFAULTS, GW_STAGES, GW_ELEMENTS, GW_TESTS
   };
   root.GBF_DATA = data;
