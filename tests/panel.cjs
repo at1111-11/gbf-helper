@@ -385,6 +385,12 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await page.reload(); await ready();
     await expect(page.locator('#srQuery')).toHaveText('グラブル 火古戦場 150HELL フルオート ソロ 編成 周回');
     await expect(page.locator('#tab-search .note')).toHaveText('도움 : ww99w');
+    // Source notes only on 레이드 탐색기; 극성기 계산기 shows the reference site as a link.
+    const notes = await page.locator('.tab .note').allTextContents();
+    assert.ok(notes.every(n => !/gbf\.wiki|kamigame|GameWith|출처|수량:/.test(n)), 'no source notes at the bottom: ' + notes);
+    await expect(page.locator('#tab-trehun .note')).toHaveText('참고 사이트 : http://liliel.web.fc2.com/');
+    await expect(page.locator('#tab-trehun .note a')).toHaveAttribute('href', 'http://liliel.web.fc2.com/');
+    await expect(page.locator('#tab-gw .note')).toHaveCount(0);
     checks.push('검색기: pick 육룡 → 윌나스 + 풀오토·솔로·편성·주회 gives "グラブル ウィルナス フルオート ソロ 編成 周回" / English, game-name switch, 고전장 with 화 + 150헬, YouTube button opens the search, remembered, credit "도움 : ww99w"');
     await page.setViewportSize({ width: 360, height: 1100 });
     await page.screenshot({ path: path.join(out, 'search.png') });
@@ -412,7 +418,10 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await expect(page.locator('.float-tip.show')).toContainText('윌나스의 기운');
     await page.mouse.move(2, 2);
     await expect(page.locator('.pt-head .pt-hint')).toHaveCount(0);
-    await expect(page.locator('.pt-head-stamp')).toHaveText('각 아이콘에 커서를 올리면 상세내용이 나와요.');
+    // Exactly two lines: "각 아이콘에 커서를 올리면" / "상세 내용이 나와요." (no squeezed wrapping).
+    const hint = await page.locator('.pt-head-stamp > span:last-child').evaluate(s => ({ text: s.innerText, h: s.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(s).lineHeight) }));
+    assert.equal(hint.text, '각 아이콘에 커서를 올리면' + String.fromCharCode(10) + '상세 내용이 나와요.');
+    assert.ok(hint.h <= hint.lh * 2 + 1, 'the hint is two lines, not squeezed: ' + JSON.stringify(hint));
     await page.locator('.pt-head-stamp .tip-icon').hover();
     await expect(page.locator('.float-tip.show')).toHaveText('이렇게요!');
     assert.ok(await page.locator('.float-tip.show').evaluate(e => e.getBoundingClientRect().width < 110), '이렇게요! box is sized to its text');

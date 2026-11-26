@@ -162,7 +162,8 @@
         app.state.trehun = Object.assign({}, D.TREHUN_DEFAULTS);
         changed();
       })),
-      h('p', { class: 'note', text: '헬 상자 드롭률은 커뮤니티 추정치예요. 참고: liliel 님 トレハン計算機' }));
+      h('p', { class: 'note' }, '참고 사이트 : ',
+        h('a', { href: 'http://liliel.web.fc2.com/', target: '_blank', rel: 'noopener noreferrer', text: 'http://liliel.web.fc2.com/' })));
     for (const fn of syncs) fn();
     renderResult();
   }

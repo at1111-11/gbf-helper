@@ -230,10 +230,11 @@
         h('img', { src: b.img, alt: '' }),
         h('div', { class: 'pt-head-body' }, h('b', { text: b.full }),
           h('div', { class: 'pt-info' }, b.info.map(([k, v]) => h('span', null, h('small', { text: k }), v)))),
-        h('span', { class: 'pt-head-stamp' }, tipIcon({ img: P.ICONS.stamp.img, name: '이렇게요!', lines: [] }), '각 아이콘에 커서를 올리면 상세내용이 나와요.')),
+        h('span', { class: 'pt-head-stamp' }, tipIcon({ img: P.ICONS.stamp.img, name: '이렇게요!', lines: [] }),
+          h('span', null, '각 아이콘에 커서를 올리면', h('br'), '상세 내용이 나와요.'))),
       b.opening ? opening(b.opening) : null,
       board(b),
-      h('p', { class: 'note', text: '패턴: 사용자 제공 패턴표(천원) · GameWith 패턴표(루시제로·베르수시아)를 HP 순서로 다시 정리, 아이콘·효과는 gbf.wiki 레이드 문서 참고. 메모는 이 PC에만 저장돼요.' })
+      h('p', { class: 'note', text: '메모는 이 브라우저에만 저장돼요.' })
     ].filter(Boolean));
     requestAnimationFrame(fitAll);
     // Text wraps differently when the panel width changes, so the boxes are re-fitted then (width only, to avoid loops).

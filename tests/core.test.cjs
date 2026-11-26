@@ -185,6 +185,8 @@ test('검색기: search words like 그랑블루 검색 도우미', () => {
 test('extension never contacts the game or any website', () => {
   const root = path.join(__dirname, '..');
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
+  assert.equal(manifest.name, '그랑블루 도우미', 'manifest Korean text is intact (not broken by a non-UTF-8 save)');
+  assert.ok(/^[가-힣]/.test(manifest.description));
   assert.equal(manifest.host_permissions, undefined);
   assert.equal(manifest.content_scripts, undefined);
   assert.deepEqual(manifest.permissions.sort(), ['sidePanel', 'storage']);

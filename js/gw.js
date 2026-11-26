@@ -121,8 +121,7 @@
       h('h2', { class: 'ribbon' }, h('span', { text: '속도 비교' })),
       h('div', { class: 'speed' },
         h('div', { class: 'speed-inputs' }, side('a'), h('span', { class: 'vs', text: 'vs' }), side('b')),
-        resultEl),
-      h('p', { class: 'note', text: '체력·공헌도(솔로)·고기: gbf.wiki 2026년 고전장 / 방어: kamigame 防御値一覧 / 헬 그림: 지난 고전장(2026년 9월) / 테스트 목표 HP: 사용자 제공 표' }));
+        resultEl));
     renderResult();
   }
 
