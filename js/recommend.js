@@ -3,14 +3,15 @@
 (function (root) {
   const { h } = root.GBF_UI;
 
-  // hero: 'logo' = the site's logo on a themed backdrop, 'art' = a full-width picture.
-  // desc: plain text, with *word* drawn bold + italic.
+  // Picture: shown in a round frame on a themed backdrop ('art' = a picture that fills the circle,
+  // 'logo' = a logo fitted inside it). bg: an optional picture shown soft and blurred behind the circle.
+  // desc: plain text, with *word* drawn bold.
   const SITES = [
-    { name: 'GBF.WIKI', star: true, url: 'https://gbf.wiki/', img: 'img/notes/gbf-wiki.webp', hero: 'logo', theme: 'sky',
+    { name: 'GBF.WIKI', star: true, url: 'https://gbf.wiki/', img: 'img/notes/gbf-wiki.webp', fit: 'logo', theme: 'sky',
       desc: '정보량이 *엄청나게* 많은 서양권 위키.' },
-    { name: '루리아노트', star: true, url: 'https://lyria-note-korean.com/', img: 'img/notes/lyria-note.webp', hero: 'art', theme: 'meadow',
+    { name: '루리아노트', star: true, url: 'https://lyria-note-korean.com/', img: 'img/notes/lyria-note-face.webp', bg: 'img/notes/lyria-note.webp', fit: 'art', theme: 'meadow',
       desc: '인게임정보 한국어화를 진행중인 팬사이트' },
-    { name: 'GBFAL', star: false, url: 'https://mizagbf.github.io/GBFAL/index.html', img: 'img/notes/gbfal.webp', hero: 'logo', theme: 'pink',
+    { name: 'GBFAL', star: false, url: 'https://mizagbf.github.io/GBFAL/index.html', img: 'img/notes/gbfal.webp', fit: 'logo', theme: 'pink',
       desc: '고화질 일러스트 파일을 구할 수 있는 사이트' }
   ];
 
@@ -20,7 +21,9 @@
 
   function card(s) {
     return h('article', { class: 'rc-card' },
-      h('div', { class: `rc-hero is-${s.hero} theme-${s.theme}`, 'aria-hidden': 'true' }, h('img', { src: s.img, alt: '' })),
+      h('div', { class: `rc-hero theme-${s.theme}`, 'aria-hidden': 'true' },
+        s.bg ? h('img', { class: 'rc-bg', src: s.bg, alt: '' }) : null,
+        h('span', { class: `rc-portrait is-${s.fit}` }, h('img', { src: s.img, alt: '' }))),
       // The name is the link ("★ 이름", one space after the star); the address below is plain text.
       h('h3', { class: 'rc-ribbon' },
         h('a', { class: 'rc-link', href: s.url, target: '_blank', rel: 'noopener noreferrer' },

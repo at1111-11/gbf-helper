@@ -73,10 +73,20 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.deepEqual(await page.locator('#tab-recommend .rc-ribbon a').evaluateAll(a => a.map(x => x.getAttribute('href'))), ['https://gbf.wiki/', 'https://lyria-note-korean.com/', 'https://mizagbf.github.io/GBFAL/index.html']); // the name is the link
     await expect(page.locator('#tab-recommend .rc-url a, #tab-recommend a.rc-url')).toHaveCount(0); // address is plain text
     assert.ok(await page.locator('#tab-recommend .rc-desc').evaluateAll(d => d.every(x => getComputedStyle(x).textAlign === 'center')), 'descriptions are centered');
-    assert.ok(await page.locator('#tab-recommend .rc-hero img').evaluateAll(a => a.length === 3 && a.every(i => i.complete && i.naturalWidth > 0)), 'site pictures load');
+    assert.ok(await page.locator('#tab-recommend .rc-hero img').evaluateAll(a => a.every(i => i.complete && i.naturalWidth > 0)), 'site pictures load');
+    // Each picture sits in a round frame (the user preferred circles to pictures filling the whole box).
+    assert.ok(await page.locator('#tab-recommend .rc-portrait').evaluateAll(p => p.length === 3 && p.every(x => { const r = x.getBoundingClientRect(); return getComputedStyle(x).borderRadius === '50%' && Math.abs(r.width - r.height) < 1 && r.width < x.parentElement.getBoundingClientRect().width / 2; })), 'round picture frames');
+    await expect(page.locator('#tab-recommend .rc-desc em')).toHaveCSS('font-style', 'normal'); // bold, not italic
+    // Card text uses the bundled Gowun Batang (fonts/, OFL) and every letter on the cards is in the cut-down font file.
+    const fontOk = await page.evaluate(async () => {
+      await document.fonts.load('700 16px "Gowun Batang Note"'); await document.fonts.load('400 16px "Gowun Batang Note"');
+      const text = [...document.querySelectorAll('#tab-recommend .rc-ribbon, #tab-recommend .rc-body')].map(e => e.textContent).join('');
+      const face = [...document.fonts].find(f => f.family.replace(/"/g, '') === 'Gowun Batang Note' && f.status === 'loaded');
+      return { loaded: !!face, used: getComputedStyle(document.querySelector('#tab-recommend .rc-desc')).fontFamily.includes('Gowun Batang Note'), check: document.fonts.check('16px "Gowun Batang Note"', text) };
+    });
+    assert.ok(fontOk.loaded && fontOk.used && fontOk.check, 'Gowun Batang is loaded and covers the card text: ' + JSON.stringify(fontOk));
     assert.equal(await page.locator('#tab-recommend .rc-body').first().evaluate(e => getComputedStyle(e).textAlign), 'center');
     await expect(page.locator('#tab-recommend .rc-desc em')).toHaveText('엄청나게');
-    assert.equal(await page.locator('#tab-recommend .rc-desc em').evaluate(e => getComputedStyle(e).fontStyle), 'italic');
     await page.getByRole('tab', { name: '월간교환' }).click();
     checks.push('First open: no title sign, 6 shops with pictures, exchanged counts start at 0 of 골드문 2 · 반홍 710 · 시드 1,700, reset on the 1st at 05:00');
 
