@@ -145,10 +145,13 @@ select.in option { background: #2a1910; }
   background: rgba(0, 0, 0, .3); border: 1px solid var(--frame);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .4);
 }
-/* Fixed column shares sized for the longest value of each kind (2/2, 710/710, 1,700/1,700, 40/40). */
-.status-left { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.05fr) minmax(0, 1.37fr) minmax(0, .8fr); gap: 4px; min-width: 0; }
-.stock { display: flex; align-items: center; gap: 3px; white-space: nowrap; min-width: 0; overflow: hidden; line-height: 1.2; }
+/* Four totals spread with equal gaps; each value keeps the width of its largest number (see .stock-ghost). */
+.status-left { display: flex; justify-content: space-between; align-items: center; gap: 6px; min-width: 0; }
+.stock { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; line-height: 1.2; }
 .stock .item-ico { width: 17px; height: 17px; flex: none; }
+.stock-val { display: inline-grid; }
+.stock-cur, .stock-ghost { grid-area: 1 / 1; }
+.stock-ghost { visibility: hidden; }
 .stock-num { font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .stock small { color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
 /* "리셋까지 5일 5시간" on one line, the date under it. Fixed width (fits the longest "30일 23시간" with room
@@ -169,23 +172,33 @@ select.in option { background: #2a1910; }
 .status-reset small { font-size: 10px; color: var(--muted); }
 .status-reset b { font-size: 12.5px; color: var(--gold); font-variant-numeric: tabular-nums; }
 
-/* Weekly caps: three cells side by side — [icon ×50] chip, then the name and its 패스 / 2배 checkbox. */
-.weekly {
-  margin: 0 0 4px; padding: 6px 8px 5px; border-radius: 6px;
-  background: rgba(20, 10, 5, .45); border: 1px solid #1d110a; box-shadow: inset 0 0 0 1px rgba(217, 183, 122, .22);
+/* Weekly caps: one row styled like the monthly shops (thumbnail, title with countdown, chips). */
+.weekly-list { margin-bottom: 4px; }
+.wk-left { margin-left: 6px; font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+.wk-left b { color: var(--gold); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+/* A chip with a word in front of its icon (주간 이름, 샌드박스 미션/상점). The ✓ sits on the icon. */
+.chip-item.has-label { padding-left: 6px; }
+.chip-label { font-size: 11px; font-weight: 800; letter-spacing: -.3px; }
+.ico-wrap { position: relative; display: inline-flex; }
+.chip-item.has-label.done::after { content: none; }
+.chip-item.has-label.done .ico-wrap::after {
+  content: "✓"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  font-size: 15px; font-weight: 900; color: var(--ok); text-shadow: 0 0 2px #000, 0 0 2px #000;
 }
-.wk-cells { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
-.wk-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
-.wk-chip { justify-content: center; min-width: 0; max-width: 100%; }
-.wk-sub { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; white-space: nowrap; min-height: 16px; letter-spacing: -.3px; }
-.wk-name { font-weight: 800; color: var(--cream); }
-.wk-cell.done .wk-name { color: var(--muted); }
-.wk-note { color: var(--muted); font-size: 10px; }
-.wk-opt { display: inline-flex; align-items: center; gap: 2px; color: var(--muted); font-size: 10.5px; cursor: pointer; }
-.wk-opt input { width: 12px; height: 12px; margin: 0; accent-color: var(--gold); cursor: pointer; }
-.wk-reset { margin-top: 5px; padding-top: 4px; border-top: 1px solid rgba(217, 183, 122, .2); text-align: right; line-height: 1.2; white-space: nowrap; }
-.wk-reset small { font-size: 10px; color: var(--muted); }
-.wk-reset b { font-size: 12px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.chip-item.has-label.done .chip-label { color: #b9a68b; }
+/* 패스 / 2배: a small toggle joined to the right side of its chip. */
+.chip-pair { display: inline-flex; align-items: stretch; }
+.chip-pair .chip-item { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.chip-opt {
+  display: inline-flex; align-items: center; gap: 3px; height: 24px; padding: 0 6px; margin-left: -1px;
+  border: 1px solid #5a3a1f; border-radius: 0 4px 4px 0; background: linear-gradient(180deg, #4a3220, #33220f);
+  color: #d9c39a; font-size: 10.5px; font-weight: 800; cursor: pointer; box-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+.chip-opt .opt-box { width: 10px; height: 10px; border-radius: 2px; border: 1px solid #b99a66; background: #1d120a; position: relative; }
+.chip-opt.on { color: #2b1a08; background: linear-gradient(180deg, #f3cd6d, #c9973c); }
+.chip-opt.on .opt-box { background: #fff3c4; border-color: #6b4a1e; }
+.chip-opt.on .opt-box::after { content: "✓"; position: absolute; left: 0; top: -3px; font-size: 10px; line-height: 1; color: #4a2c06; font-weight: 900; }
+.chip-opt:hover { filter: brightness(1.1); }
 
 .shops { display: flex; flex-direction: column; gap: 4px; }
 .shop {

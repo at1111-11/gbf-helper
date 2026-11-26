@@ -36,42 +36,54 @@
       h('div', { class: 'status-left' }, ['gold', 'half', 'seed', 'quartz'].map(kind =>
         h('span', { class: `stock kind-${kind}`, title: `${D.KINDS[kind].full} · 이번 달 교환한 수량` },
           itemIcon(kind),
-          h('b', { class: 'stock-num', dataset: { kind }, text: num(total[kind] - left[kind], 0) }),
-          h('small', { text: `/${num(total[kind], 0)}` })))),
+          // An invisible copy of the largest value keeps the width fixed, so the evenly spaced totals never move.
+          h('span', { class: 'stock-val' },
+            h('span', { class: 'stock-cur' },
+              h('b', { class: 'stock-num', dataset: { kind }, text: num(total[kind] - left[kind], 0) }),
+              h('small', { text: `/${num(total[kind], 0)}` })),
+            h('span', { class: 'stock-ghost', 'aria-hidden': 'true' },
+              h('b', { text: num(total[kind], 0) }), h('small', { text: `/${num(total[kind], 0)}` })))))),
       h('div', { class: 'status-reset', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
         h('span', { class: 'reset-line' }, h('small', { text: '리셋까지 ' }), h('b', { id: 'resetLeft', text: C.formatLeft(next - now).replace(' 남음', '') })),
         h('small', { id: 'resetAt', text: `${p.month}/${p.day}(${WEEKDAYS[p.weekday]}) 05:00` })));
   }
 
-  // ---- Weekly caps ----
+  // ---- Weekly caps: one row in the same look as the monthly shops ----
   function w() { return app.state.weekly; }
   function weeklyQty(x) { return x.up && w().opts[x.up.key] ? x.up.qty : x.qty; }
 
-  function weeklySection() {
+  function weeklyRow() {
     const now = new Date();
     const next = C.nextWeeklyReset(now);
     const p = C.jstParts(next);
-    const cell = x => {
+    const doneCount = D.WEEKLY.filter(x => w().done[x.id]).length;
+    const allDone = doneCount === D.WEEKLY.length;
+    const toggleAll = () => { for (const x of D.WEEKLY) { if (allDone) delete w().done[x.id]; else w().done[x.id] = true; } commit(); };
+    const items = D.WEEKLY.map(x => {
       const done = !!w().done[x.id];
       const qty = weeklyQty(x);
-      return h('div', { class: 'wk-cell' + (done ? ' done' : ''), dataset: { id: x.id } },
-        h('button', {
-          type: 'button', class: 'chip-item wk-chip' + (done ? ' done' : ''), title: x.tip,
-          'aria-pressed': done ? 'true' : 'false', 'aria-label': `${x.name} ${num(qty, 0)} ${done ? '완료' : '진행 전'}`,
-          onclick: () => { if (done) delete w().done[x.id]; else w().done[x.id] = true; commit(); }
-        }, h('img', { class: 'item-ico', src: x.img, alt: '' }), h('span', { class: 'chip-qty', text: `×${num(qty, 0)}` })),
-        h('div', { class: 'wk-sub' },
-          h('span', { class: 'wk-name', text: x.name }),
-          x.up ? h('label', { class: 'wk-opt', title: x.tip },
-            h('input', { type: 'checkbox', checked: !!w().opts[x.up.key], dataset: { opt: x.up.key },
-              onchange: e => { w().opts[x.up.key] = e.target.checked; commit(); } }),
-            x.up.label) : h('span', { class: 'wk-note', text: x.note || '' })));
-    };
-    return h('section', { class: 'weekly' },
-      h('div', { class: 'wk-cells' }, D.WEEKLY.map(cell)),
-      h('div', { class: 'wk-reset', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
-        h('small', { text: '리셋까지 ' }), h('b', { id: 'weekLeft', text: C.formatLeft(next - now).replace(' 남음', '') }),
-        h('small', { text: ` · 매주 월 05:00` })));
+      const chipEl = h('button', {
+        type: 'button', class: 'chip-item has-label' + (done ? ' done' : ''), title: x.tip, dataset: { week: x.id },
+        'aria-pressed': done ? 'true' : 'false', 'aria-label': `${x.name} ${num(qty, 0)} ${done ? '완료' : '진행 전'}`,
+        onclick: () => { if (done) delete w().done[x.id]; else w().done[x.id] = true; commit(); }
+      }, h('span', { class: 'chip-label', text: x.name }), h('span', { class: 'ico-wrap' }, h('img', { class: 'item-ico', src: x.img, alt: '' })),
+        h('span', { class: 'chip-qty', text: `×${num(qty, 0)}` }));
+      if (!x.up) return chipEl;
+      const on = !!w().opts[x.up.key];
+      return h('span', { class: 'chip-pair' }, chipEl, h('button', {
+        type: 'button', class: 'chip-opt' + (on ? ' on' : ''), dataset: { opt: x.up.key }, 'aria-pressed': on ? 'true' : 'false',
+        title: x.tip, onclick: () => { w().opts[x.up.key] = !on; commit(); }
+      }, h('span', { class: 'opt-box', 'aria-hidden': 'true' }), x.up.label));
+    });
+    return h('section', { class: 'weekly shop' + (allDone ? ' all-done' : ''), dataset: { group: 'weekly' } },
+      thumb({ name: '주간 교환', img: 'img/shop-weekly.webp' }, toggleAll, allDone ? '눌러서 이번 주 체크 모두 해제' : '눌러서 이번 주 모두 완료로 체크'),
+      h('div', { class: 'shop-body' },
+        h('div', { class: 'shop-title' },
+          h('b', { text: '이번 주' }),
+          h('small', { class: 'wk-left', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
+            '리셋까지 ', h('b', { id: 'weekLeft', text: C.formatLeft(next - now).replace(' 남음', '') })),
+          h('span', { class: 'count' + (allDone ? ' done' : ''), text: `${doneCount}/${D.WEEKLY.length}` })),
+        h('div', { class: 'chips' }, items)));
   }
 
   function chip(i) {
@@ -79,11 +91,13 @@
     const qtyText = `×${num(i.perKind ? i.perQty : i.qty, 0)}`;
     const tip = `${i.name} ${num(i.qty, 0)}개${i.cost ? ' · ' + i.cost : ''}`;
     return h('button', {
-      type: 'button', class: `chip-item kind-${kind}` + (i.complete ? ' done' : ''), title: tip,
+      type: 'button', class: `chip-item kind-${kind}` + (i.label ? ' has-label' : '') + (i.complete ? ' done' : ''), title: tip,
       'aria-pressed': i.complete ? 'true' : 'false', 'aria-label': `${i.name} ${num(i.qty, 0)}개 ${i.complete ? '교환함' : '교환 전'}`,
       dataset: { id: i.id },
       onclick: () => { setProgress(i.id, i.complete ? 0 : 1); commit(); }
-    }, itemIcon(kind), kind === 'other' ? h('span', { class: 'chip-name', text: i.name }) : null, h('span', { class: 'chip-qty', text: qtyText }));
+    }, i.label ? h('span', { class: 'chip-label', text: i.label }) : null,
+      i.label ? h('span', { class: 'ico-wrap' }, itemIcon(kind)) : itemIcon(kind),
+      kind === 'other' ? h('span', { class: 'chip-name', text: i.name }) : null, h('span', { class: 'chip-qty', text: qtyText }));
   }
 
   // Treasure chips hold their own number field; Enter applies it, leaving the field puts back the saved number.
@@ -263,7 +277,7 @@
     const rows = editing ? groups.map(editShop) : groups.map(shopRow).filter(Boolean);
     host.replaceChildren(...[
       editing ? null : h('h2', { class: 'ribbon' }, h('span', { text: '주간 교환' })),
-      editing ? null : weeklySection(),
+      editing ? null : h('div', { class: 'weekly-list' }, weeklyRow()),
       h('h2', { class: 'ribbon' }, h('span', { text: editing ? '교환소 편집' : '월간 교환' })),
       editing ? null : statusBar(groups),
       h('div', { class: editing ? 'edit-list' : 'shops' }, rows.length ? rows : h('p', { class: 'empty', text: '표시할 교환소가 없어요. [편집]에서 숨긴 항목을 되돌릴 수 있어요.' })),

@@ -58,11 +58,13 @@
       ]
     },
     {
-      // Replicard Sandbox monthly event (gbf.wiki, November 2026): 4 missions × 5 + 2 Denas shops × 10 = 40.
+      // Replicard Sandbox monthly event (gbf.wiki, November 2026): quartz 4 missions × 5 + 2 Denas shops × 10 = 40,
+      // and 반홍 150 in each of the 2 Denas shops. label: short word shown in the chip before the icon.
       id: 'sandbox', name: '샌드박스', sub: '리플리카드 샌드박스 월간', img: 'img/shop-sandbox.webp',
       items: [
-        { id: 'sandbox-mission', kind: 'quartz', qty: 20, cost: '월간 미션 4개 × 5개' },
-        { id: 'sandbox-trade', kind: 'quartz', qty: 20, cost: '디나스 교환소 2곳 × 10개' }
+        { id: 'sandbox-mission', kind: 'quartz', qty: 20, label: '미션', cost: '월간 미션 4개 × 5개' },
+        { id: 'sandbox-trade', kind: 'quartz', qty: 20, label: '상점', cost: '디나스 교환소 2곳 × 10개' },
+        { id: 'sandbox-half', kind: 'half', qty: 300, cost: '디나스 교환소 2곳 × 150개' }
       ]
     }
   ];
@@ -73,7 +75,7 @@
   const WEEKLY = [
     { id: 'artifact', name: '아티팩트', img: 'img/item-artifact.webp', qty: 50, up: { key: 'pass', label: '패스', qty: 75 }, tip: '아티팩트 드롭률 대폭 UP 상한 (프리미엄 패스면 75)' },
     { id: 'fp', name: 'FP', img: 'img/item-fp.webp', qty: 5000, up: { key: 'double', label: '2배', qty: 10000 }, tip: '주간 FP 획득 상한 (2배 이벤트면 10,000)' },
-    { id: 'crystal', name: '보정석', img: 'img/item-crystal.webp', qty: 100, note: '주간 퀘스트', tip: '주간 퀘스트 보정석' }
+    { id: 'crystal', name: '보정석', img: 'img/item-crystal.webp', qty: 100, tip: '주간 퀘스트 보정석' }
   ];
 
   // Treasure hunt (트헌) calculator tables.

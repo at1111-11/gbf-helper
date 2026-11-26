@@ -32,29 +32,37 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await ready();
 
     const stock = kind => page.locator(`.stock-num[data-kind="${kind}"]`).innerText();
-    const totals = () => page.locator('.stock small').allInnerTexts();
+    const totals = () => page.locator('.stock-cur small').allInnerTexts();
     assert.deepEqual([await stock('gold'), await stock('half'), await stock('seed'), await stock('quartz')], ['0', '0', '0', '0']);
-    assert.deepEqual(await totals(), ['/2', '/710', '/1,700', '/40']);
+    assert.deepEqual(await totals(), ['/2', '/1,010', '/1,700', '/40']);
     // Order: 주간 교환 → weekly box → 월간 교환 → totals box → shops. Each total is one line ([icon] 0/2).
-    assert.deepEqual(await page.locator('#tab-monthly > *').evaluateAll(els => els.slice(0, 5).map(e => e.classList[0])), ['ribbon', 'weekly', 'ribbon', 'status', 'shops']);
+    assert.deepEqual(await page.locator('#tab-monthly > *').evaluateAll(els => els.slice(0, 5).map(e => e.classList[0])), ['ribbon', 'weekly-list', 'ribbon', 'status', 'shops']);
     assert.deepEqual(await page.locator('#tab-monthly > .ribbon').allInnerTexts(), ['주간 교환', '월간 교환']);
     assert.ok(await page.locator('.stock').evaluateAll(s => s.every(x => { const n = x.querySelector('.stock-num').getBoundingClientRect(), t = x.querySelector('small').getBoundingClientRect(); return Math.abs(n.top + n.height / 2 - (t.top + t.height / 2)) < 4; })), 'each total reads on one line');
     // Weekly: 아티팩트 50 (패스 75), FP 5,000 (2배 10,000), 보정석 100; checking marks it done; options stay after reload.
-    const wq = () => page.locator('.wk-chip .chip-qty').allInnerTexts();
+    const wq = () => page.locator('#tab-monthly .weekly .chip-qty').allInnerTexts();
     assert.deepEqual(await wq(), ['×50', '×5,000', '×100']);
-    await page.locator('.wk-opt input[data-opt="pass"]').check();
-    await page.locator('.wk-opt input[data-opt="double"]').check();
+    await page.locator('.chip-opt[data-opt="pass"]').click();
+    await page.locator('.chip-opt[data-opt="double"]').click();
+    await expect(page.locator('.chip-opt[data-opt="pass"]')).toHaveAttribute('aria-pressed', 'true');
     assert.deepEqual(await wq(), ['×75', '×10,000', '×100']);
-    await page.locator('.wk-cell[data-id="crystal"] .wk-chip').click();
-    await expect(page.locator('.wk-cell[data-id="crystal"]')).toHaveClass(/done/);
+    await page.locator('[data-week="crystal"]').click();
+    await expect(page.locator('[data-week="crystal"]')).toHaveClass(/done/);
     await expect(page.locator('#weekLeft')).toHaveText(/^\d+(일 \d+시간|시간 \d+분|분)$/);
     await page.reload(); await ready();
     assert.deepEqual(await wq(), ['×75', '×10,000', '×100']);
-    await expect(page.locator('.wk-cell[data-id="crystal"]')).toHaveClass(/done/);
-    await page.locator('.wk-opt input[data-opt="pass"]').uncheck();
-    await page.locator('.wk-opt input[data-opt="double"]').uncheck();
-    await page.locator('.wk-cell[data-id="crystal"] .wk-chip').click();
-    await expect(page.locator('#tab-monthly .shop[data-group="sandbox"] .chip-qty')).toHaveText(['×20', '×20']);
+    await expect(page.locator('[data-week="crystal"]')).toHaveClass(/done/);
+    await page.locator('.chip-opt[data-opt="pass"]').click();
+    await page.locator('.chip-opt[data-opt="double"]').click();
+    await page.locator('[data-week="crystal"]').click();
+    // The weekly row has the monthly shop look: thumbnail, "이번 주" title with the countdown, chips with names.
+    await expect(page.locator('.weekly.shop .shop-thumb img')).toHaveAttribute('src', 'img/shop-weekly.webp');
+    assert.deepEqual(await page.locator('#tab-monthly .weekly .chip-label').allInnerTexts(), ['아티팩트', 'FP', '보정석']);
+    // Monthly totals: equal gaps between the four.
+    const gaps = await page.locator('.stock').evaluateAll(s => s.slice(1).map((x, k) => Math.round(x.getBoundingClientRect().left - s[k].getBoundingClientRect().right)));
+    assert.ok(Math.max(...gaps) - Math.min(...gaps) <= 1, 'totals are evenly spaced: ' + gaps);
+    await expect(page.locator('#tab-monthly .shop[data-group="sandbox"] .chip-qty')).toHaveText(['×20', '×20', '×300']);
+    await expect(page.locator('#tab-monthly .shop[data-group="sandbox"] .chip-label')).toHaveText(['미션', '상점']);
     checks.push('주간 교환 (아티팩트 50/패스 75 · FP 5,000/2배 10,000 · 보정석 100) above 월간 교환; monthly totals box under 월간 교환 with one-line [icon] n/total incl. 샌드박스 쿼츠 40');
     await expect(page.locator('#resetAt')).toHaveText(/^\d+\/1\(.\) 05:00$/);
     await expect(page.locator('.reset-line')).toHaveText(/^리셋까지 \d+(일 \d+시간|시간 \d+분|분)$/);
@@ -75,7 +83,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
       assert.ok(fit, `reset countdown fits clear of the divider at ${w}px`);
     }
     await page.setViewportSize({ width: 360, height: 760 });
-    assert.deepEqual(await page.locator('#tab-monthly .shop').evaluateAll(els => els.map(e => e.dataset.group)), ['fp', 'pendant', 'casino', 'skyleap', 'daily', 'treasure', 'sandbox']);
+    assert.deepEqual(await page.locator('#tab-monthly .shop').evaluateAll(els => els.map(e => e.dataset.group).filter(g => g !== 'weekly')), ['fp', 'pendant', 'casino', 'skyleap', 'daily', 'treasure', 'sandbox']);
     assert.equal(await page.locator('.sign').count(), 0);
     const broken = await page.locator('img').evaluateAll(imgs => imgs.filter(i => !i.complete || !i.naturalWidth).map(i => i.src));
     assert.deepEqual(broken, []);
@@ -141,18 +149,18 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await kindsOf('treasure-half').fill('300');
     await kindsOf('treasure-half').evaluate(e => e.blur());
     await expect(kindsOf('treasure-half')).toHaveValue('260');
-    assert.deepEqual(await totals(), ['/2', '/710', '/1,700', '/40'], 'typing without Enter changes nothing');
+    assert.deepEqual(await totals(), ['/2', '/1,010', '/1,700', '/40'], 'typing without Enter changes nothing');
     await kindsOf('treasure-half').fill('300');
     await kindsOf('treasure-half').press('Enter');
     await expect(kindsOf('treasure-half')).toHaveValue('300');
-    assert.deepEqual(await totals(), ['/2', '/750', '/1,700', '/40']);
+    assert.deepEqual(await totals(), ['/2', '/1,050', '/1,700', '/40']);
     await kindsOf('treasure-seed').fill('99');
     await kindsOf('treasure-seed').press('Enter');
     await expect(kindsOf('treasure-seed')).toHaveValue('13');
     await kindsOf('treasure-seed').fill('5');
     await kindsOf('treasure-seed').press('Enter');
     await expect(kindsOf('treasure-seed')).toHaveValue('5');
-    assert.deepEqual(await totals(), ['/2', '/750', '/1,300', '/40']);    await expect(page.locator('.tip')).toBeHidden();
+    assert.deepEqual(await totals(), ['/2', '/1,050', '/1,300', '/40']);    await expect(page.locator('.tip')).toBeHidden();
     await page.locator('#tab-monthly .hint-mark').hover();
     await expect(page.locator('.tip')).toBeVisible();
     const markBox = await page.locator('#tab-monthly .hint-mark').boundingBox();
@@ -183,7 +191,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.equal(await page.locator('img[src="x"]').count(), 0);
     await expect(page.locator('[data-id="skyleap-half"]')).toHaveCount(0);
     assert.equal(await stock('half'), '100'); // casino done
-    assert.deepEqual(await totals(), ['/2', '/650', '/1,300', '/40']); // skyleap 반홍 hidden
+    assert.deepEqual(await totals(), ['/2', '/950', '/1,300', '/40']); // skyleap 반홍 hidden
     assert.ok(!/\bnull\b|undefined/.test(await page.locator('main').innerText()), 'no stray null/undefined text');
     checks.push('Edit: a custom item is added (name shown as plain text) and a hidden item leaves the list and totals');
     await page.screenshot({ path: path.join(out, 'monthly.png') });
@@ -206,7 +214,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
       await page.setViewportSize({ width, height: 760 });
       const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       assert.ok(over <= 0, `monthly overflows by ${over}px at ${width}px`);
-      const tall = await page.locator('#tab-monthly .shop').evaluateAll(els => Math.max(...els.filter(e => e.dataset.group !== 'fp').map(e => e.getBoundingClientRect().height))); // fp holds the extra test item, treasure has two lines
+      const tall = await page.locator('#tab-monthly .shops .shop').evaluateAll(els => Math.max(...els.filter(e => e.dataset.group !== 'fp' && e.dataset.group !== 'sandbox').map(e => e.getBoundingClientRect().height))); // fp holds the extra test item, treasure has two lines
       assert.ok(tall <= (width < 340 ? 90 : 64), `a shop row is ${tall}px tall at ${width}px`);
     }
     await page.setViewportSize({ width: 360, height: 760 });

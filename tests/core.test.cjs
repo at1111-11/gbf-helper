@@ -60,9 +60,11 @@ test('weekly reset is Monday 05:00 JST; checks clear, 패스 / 2배 options stay
   for (const x of D.WEEKLY) assert.ok(fs.existsSync(path.join(__dirname, '..', x.img)), x.id + ' icon');
 });
 
-test('sandbox monthly quartz is 40 (missions 20 + trades 20)', () => {
+test('sandbox monthly: quartz 40 (미션 20 + 상점 20) and 반홍 300', () => {
   const g = D.GROUPS.find(x => x.id === 'sandbox');
-  assert.equal(g.items.reduce((s, i) => s + i.qty, 0), 40);
+  assert.equal(g.items.filter(i => i.kind === 'quartz').reduce((s, i) => s + i.qty, 0), 40);
+  assert.deepEqual(g.items.filter(i => i.kind === 'quartz').map(i => i.label), ['미션', '상점']);
+  assert.equal(g.items.find(i => i.kind === 'half').qty, 300);
 });
 
 test('alchemy lab is not part of the list', () => {
@@ -75,8 +77,8 @@ test('checklist totals and remaining amounts', () => {
   const m = C.normalizeMonthly({ progress: { 'fp-gold': 1, 'casino-seed': 1 } });
   const groups = C.resolveGroups(D.GROUPS, m, D.KINDS);
   const { left, total } = C.remaining(groups);
-  assert.deepEqual(total, { gold: 2, half: 710, seed: 1700, quartz: 40, other: 0 });
-  assert.deepEqual(left, { gold: 1, half: 710, seed: 1500, quartz: 40, other: 0 });
+  assert.deepEqual(total, { gold: 2, half: 1010, seed: 1700, quartz: 40, other: 0 });
+  assert.deepEqual(left, { gold: 1, half: 1010, seed: 1500, quartz: 40, other: 0 });
   assert.equal(groups.find(g => g.id === 'fp').items[0].name, '골드문');
 });
 
@@ -93,10 +95,10 @@ test('treasure trades: 반홍 total written by the user, 시드 = 50 × kinds', 
   assert.equal(set.half.qty, 300);
   assert.equal(set.seed.kinds, 5);
   assert.equal(set.seed.qty, 250);
-  assert.deepEqual(set.sum.total, { gold: 2, half: 450 + 300, seed: 1050 + 250, quartz: 40, other: 0 });
+  assert.deepEqual(set.sum.total, { gold: 2, half: 450 + 300 + 300, seed: 1050 + 250, quartz: 40, other: 0 });
   const done = pick({ userQty: { 'treasure-half': 300 }, progress: { 'treasure-half': 1 } });
   assert.equal(done.half.complete, true);
-  assert.equal(done.sum.left.half, 450);
+  assert.equal(done.sum.left.half, 450 + 300); // + 샌드박스 반홍 300
   assert.equal(pick({ treasureKinds: { 'treasure-seed': 99 } }).seed.kinds, 13);
   assert.equal(pick({ treasureKinds: { 'treasure-seed': -3 } }).seed.kinds, 0);
   assert.equal(pick({ userQty: { 'treasure-half': -5 } }).half.qty, 0);
@@ -122,7 +124,7 @@ test('hidden, edited and custom items', () => {
   const { left, total } = C.remaining(groups);
   assert.equal(total.gold, 4);
   assert.equal(left.gold, 2);
-  assert.equal(total.half, 710 - 50 - 100); // fp 100 -> 50, skyleap 100 hidden
+  assert.equal(total.half, 1010 - 50 - 100); // fp 100 -> 50, skyleap 100 hidden
 });
 const REF = { boxBase: 2, itemBase: 8, tears: 0, essel: 0, myStone: 'none', friendStone: 'none' };
 
