@@ -1,0 +1,5 @@
+# Working notes and local-only files (not published)
+CLAUDE.md
+tests/artifacts/
+tools/
+*.zip
