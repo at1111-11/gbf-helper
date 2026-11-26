@@ -162,8 +162,7 @@
         app.state.trehun = Object.assign({}, D.TREHUN_DEFAULTS);
         changed();
       })),
-      h('p', { class: 'note' }, '참고 사이트 : ',
-        h('a', { href: 'http://liliel.web.fc2.com/', target: '_blank', rel: 'noopener noreferrer', text: 'http://liliel.web.fc2.com/' })));
+      h('p', { class: 'note', text: '참고 사이트 : liliel.web.fc2.com' }));
     for (const fn of syncs) fn();
     renderResult();
   }

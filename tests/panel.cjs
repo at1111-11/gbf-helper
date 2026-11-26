@@ -388,8 +388,8 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     // Source notes only on 레이드 탐색기; 극성기 계산기 shows the reference site as a link.
     const notes = await page.locator('.tab .note').allTextContents();
     assert.ok(notes.every(n => !/gbf\.wiki|kamigame|GameWith|출처|수량:/.test(n)), 'no source notes at the bottom: ' + notes);
-    await expect(page.locator('#tab-trehun .note')).toHaveText('참고 사이트 : http://liliel.web.fc2.com/');
-    await expect(page.locator('#tab-trehun .note a')).toHaveAttribute('href', 'http://liliel.web.fc2.com/');
+    await expect(page.locator('#tab-trehun .note')).toHaveText('참고 사이트 : liliel.web.fc2.com');
+    await expect(page.locator('#tab-trehun .note a')).toHaveCount(0); // plain text, not a link
     await expect(page.locator('#tab-gw .note')).toHaveCount(0);
     checks.push('검색기: pick 육룡 → 윌나스 + 풀오토·솔로·편성·주회 gives "グラブル ウィルナス フルオート ソロ 編成 周回" / English, game-name switch, 고전장 with 화 + 150헬, YouTube button opens the search, remembered, credit "도움 : ww99w"');
     await page.setViewportSize({ width: 360, height: 1100 });

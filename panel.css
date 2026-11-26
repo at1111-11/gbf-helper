@@ -133,7 +133,6 @@ select.in { padding-right: 2px; cursor: pointer; }
 select.in option { background: #2a1910; }
 .footer { display: flex; gap: 6px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
 .note { margin: 10px 2px 0; font-size: 11px; line-height: 1.5; color: var(--muted); text-align: center; }
-.note a { color: var(--gold); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
 .empty { text-align: center; color: var(--muted); padding: 18px 8px; }
 
 /* ---------- Monthly tab ---------- */
