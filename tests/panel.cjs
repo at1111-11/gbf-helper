@@ -534,6 +534,10 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await expect(page.locator('.float-tip.show')).toHaveText('허탈매 턴 오의게이지 감소');
     assert.ok(!/[{}]/.test(await page.locator('#tab-pattern').innerText()), 'no raw {debuff} tokens left in the text');
     assert.ok(await page.locator('.pt-debuff').count() >= 15, 'boss debuffs show as icons');
+    // Icons are drawn from 2x pictures so they stay sharp on high-DPI screens (debuff sprite: 22 cells of 32px, FC 32px+).
+    const res = await page.evaluate(async () => { const load = async s => { const i = new Image(); i.src = s; await i.decode(); return [i.naturalWidth, i.naturalHeight]; }; return [await load('img/icons/debuffs.webp'), await load('img/icons/fc.webp')]; });
+    assert.deepEqual(res[0], [704, 32], 'debuff sprite is 2x: ' + res[0]);
+    assert.ok(res[1][0] >= 32, 'FC icon is 2x: ' + res[1]);
     await page.mouse.move(2, 2);
     const tops = await page.evaluate(() => [...document.querySelectorAll('.pt-cell[data-at]')].filter(e => e.dataset.at).map(e => [e.dataset.at, Math.round(e.getBoundingClientRect().top)]));
     for (let i = 1; i < tops.length; i++) assert.ok(tops[i][1] >= tops[i - 1][1], 'patterns follow the HP order down the bar');
