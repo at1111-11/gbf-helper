@@ -69,8 +69,19 @@
     const icon = P.ICONS[part.slice(1)];
     return icon ? tipIcon(icon, 'pt-inline') : part.slice(1);
   }
+  // The word right before an icon ("+ ", "해제 시 ") is kept on the same line as the icon, so a line never
+  // breaks just before an icon and leaves it alone on the next line.
   function rich(text) {
-    return String(text).split(/\{([^{}]+)\}/).map((part, k) => k % 2 ? token(part) : part).filter(x => x !== '');
+    const parts = String(text).split(/\{([^{}]+)\}/);
+    const out = [];
+    for (let k = 0; k < parts.length; k++) {
+      if (k % 2 === 0) { if (parts[k]) out.push(parts[k]); continue; }
+      const prev = out.length && typeof out[out.length - 1] === 'string' ? out.pop() : '';
+      const m = prev.match(/^([\s\S]*?)(\S*\s*)$/);
+      if (m[1]) out.push(m[1]);
+      out.push(h('span', { class: 'pt-keep' }, m[2] || null, token(parts[k])));
+    }
+    return out;
   }
 
   function line(l) {
@@ -83,8 +94,8 @@
     return h('li', { class: 'pt-sub' },
       h('div', { class: 'pt-sub-head' },
         l.n ? h('b', null, rich(l.n)) : null,
-        l.c ? h('span', { class: 'pt-sub-cond' }, h('i', { text: '해제' }), rich(l.c)) : null),
-      l.t ? h('div', { class: 'pt-sub-hard', title: '타화자재가 붙었을 때의 해제 조건' }, h('i', { text: '타화자재' }), rich(l.t)) : null,
+        l.c ? h('span', { class: 'pt-sub-cond' }, h('i', { text: '해제' }), h('span', { class: 'pt-rich' }, rich(l.c))) : null),
+      l.t ? h('div', { class: 'pt-sub-hard', title: '타화자재가 붙었을 때의 해제 조건' }, h('i', { text: '타화자재' }), h('span', { class: 'pt-rich' }, rich(l.t))) : null,
       l.e ? h('div', { class: 'pt-sub-eff' }, rich(l.e)) : null);
   }
 
@@ -94,9 +105,9 @@
       row.stamp ? tipIcon(P.ICONS[row.stamp] || P.ICONS.stamp, 'pt-stamp') : null,
       h('div', { class: 'pt-card-head' },
         tag ? h('span', { class: 'pt-tag', text: tag }) : null,
-        h('b', { class: 'pt-name', text: row.name }),
+        h('b', { class: 'pt-name' }, rich(row.name)),
         icons(row.icons)),
-      row.cond ? h('div', { class: 'pt-cond' }, h('span', { text: '해제' }), rich(row.cond)) : null,
+      row.cond ? h('div', { class: 'pt-cond' }, h('span', { text: '해제' }), h('span', { class: 'pt-rich' }, rich(row.cond))) : null,
       row.lines && row.lines.length ? h('ul', { class: 'pt-lines' }, row.lines.map(line)) : null,
       row.note ? h('div', { class: 'pt-note', text: row.note }) : null);
   }

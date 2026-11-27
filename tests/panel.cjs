@@ -658,6 +658,16 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await expect(page.locator('#tab-pattern')).not.toContainText('피해 컷');
     await expect(page.locator('#tab-pattern')).not.toContainText('페이탈 체인');
     assert.ok(await page.locator('#tab-pattern .tip-icon.pt-inline img[src$="fc.webp"]').count() >= 3, 'FC shown as an icon in cancel conditions');
+    // Icons sit on the text line (not floating above it) in cancel conditions; FC gauge is written "[FC icon] 게이지".
+    const off = await page.locator('#tab-pattern .pt-keep').evaluateAll(keeps => keeps.filter(k => k.firstChild && k.firstChild.nodeType === 3 && k.firstChild.textContent.trim()).map(k => {
+      const r = document.createRange(); r.selectNodeContents(k.firstChild); const t = r.getClientRects(); const last = t[t.length - 1];
+      const i = k.querySelector('.tip-icon, .pt-debuff').getBoundingClientRect();
+      return Math.abs((i.top + i.bottom) / 2 - (last.top + last.bottom) / 2);
+    }));
+    assert.ok(off.length >= 3 && Math.max(...off) <= 4, 'icons sit on the same line as the word before them: ' + off);
+    await expect(page.locator('#tab-pattern')).not.toContainText('FC -30%');
+    const gaugeLine = page.locator('#tab-pattern .pt-sub-eff', { hasText: '게이지 -30%' }).first();
+    await expect(gaugeLine.locator('.tip-icon.pt-inline img[src$="fc.webp"]')).toHaveCount(1); // "[FC icon] 게이지 -30%"
     await expect(page.locator('#tab-pattern')).not.toContainText('1주차의 3배');
     await expect(page.locator('.pt-card .pt-name', { hasText: '정토 (G100 또는 HP 16%)' })).toHaveCount(1);
     await expect(page.locator('.pt-card .pt-name', { hasText: '정토 (G50 또는 HP 51%)' })).toHaveCount(1);

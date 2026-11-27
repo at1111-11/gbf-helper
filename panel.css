@@ -605,7 +605,7 @@ button.chip-item:hover { filter: brightness(1.08); }
 .pt-tag { padding: 1px 5px; border-radius: 3px; font-size: 10.5px; font-weight: 800; color: #fff; background: #6b4826; white-space: nowrap; }
 .k-ct .pt-tag, .pt-lines .pt-tag.is-ct { background: #3b74b8; } .k-special .pt-tag { background: #8550c0; } .k-route-b .pt-tag { background: #2f7cc4; } .k-route-r .pt-tag { background: #c23a4a; }
 .pt-name { font-size: 14px; letter-spacing: -.3px; line-height: 1.3; }
-.pt-cond { display: flex; align-items: baseline; gap: 5px; margin-top: 4px; padding: 3px 6px; border-radius: 4px; font-size: 12.5px; font-weight: 900; color: #5a1608; background: rgba(255, 255, 255, .7); box-shadow: inset 0 0 0 1px rgba(63, 143, 106, .45); }
+.pt-cond { display: flex; align-items: center; gap: 5px; margin-top: 4px; padding: 3px 6px; border-radius: 4px; font-size: 12.5px; font-weight: 900; color: #5a1608; background: rgba(255, 255, 255, .7); box-shadow: inset 0 0 0 1px rgba(63, 143, 106, .45); }
 .pt-cond span { flex: none; padding: 0 5px; border-radius: 3px; font-size: 10.5px; color: #fff; background: #3f8f6a; }
 .pt-lines { margin: 5px 0 0; padding-left: 15px; color: #3b2215; }
 .pt-lines li { margin: 2px 0; }
@@ -617,14 +617,14 @@ button.chip-item:hover { filter: brightness(1.08); }
 .pt-lines li:not(.pt-sub) + li.pt-sub { margin-top: 3px; }
 .pt-sub-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 6px; }
 .pt-sub-head b { font-size: 12.5px; color: #2a1608; }
-.pt-sub-cond { display: inline-flex; align-items: baseline; gap: 4px; font-weight: 900; color: #5a1608; }
+.pt-sub-cond { display: inline-flex; align-items: center; gap: 4px; font-weight: 900; color: #5a1608; }
 .pt-lines li.pt-kv { list-style: none; margin: 1px 0 1px -15px; display: grid; grid-template-columns: 70px 1fr; gap: 6px; font-size: 11.5px; }
 .pt-kv b { align-self: start; padding: 0 4px; border-radius: 3px; text-align: center; color: #5a1608; background: rgba(255, 255, 255, .6); box-shadow: inset 0 0 0 1px rgba(107, 72, 38, .3); white-space: nowrap; }
 .pt-lines li.pt-lhead { list-style: none; margin: 5px 0 2px -15px; font-weight: 800; color: #4a2a12; }
 .pt-lines li.pt-lhead:first-child { margin-top: 0; }
 .pt-sub-cond i { flex: none; white-space: nowrap; font-style: normal; padding: 0 4px; border-radius: 3px; font-size: 10px; color: #fff; background: #3f8f6a; }
 .pt-sub-eff { font-size: 11.5px; color: #3b2215; }
-.pt-sub-hard { display: flex; align-items: baseline; gap: 4px; margin-top: 1px; font-weight: 900; color: #7a1d2a; }
+.pt-sub-hard { display: flex; align-items: center; gap: 4px; margin-top: 1px; font-weight: 900; color: #7a1d2a; }
 .pt-sub-hard i { flex: none; white-space: nowrap; font-style: normal; padding: 0 4px; border-radius: 3px; font-size: 10px; color: #fff; background: #a83a4a; }
 
 /* Memo column: one box per HP section; a dashed line at the top of each box sits level with its HP mark. */
@@ -710,6 +710,7 @@ button.chip-item:hover { filter: brightness(1.08); }
 .pt-debuff:hover, .pt-debuff:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
 /* Raid status icons (기운, 구슬, 법등 …) written as {@key} inside pattern text. */
 .tip-icon.pt-inline { display: inline-block; width: 16px; height: 16px; margin: 0 1px; vertical-align: -3px; }
+.pt-keep { white-space: nowrap; } /* the word before an icon stays on the icon's line */
 
 /* ---- 베인 노트: each site is an in-game character profile card ---- */
 /* Gowun Batang (SIL OFL 1.1, fonts/OFL-GowunBatang.txt), cut down to the letters used on these cards
