@@ -46,9 +46,9 @@
     t10: { img: I('z-t10'), name: '제10절', lines: ['매 턴 종료 시 아군 최대 HP 감소'] },
     t11: { img: I('z-t11'), name: '제11절', lines: ['보스 공격에 랜덤 2속성 추가 피해'] },
     t12: { img: I('z-t12'), name: '제12절', lines: ['보스 공격·약체가 암흑·회피·약체 무효 등을 무시하고 필중', '턴 종료 시 아군에게 랜덤 약체'] },
-    stamp: { img: 'img/icons/stamp-ok.png', name: '스탬프 · 전조', lines: ['전조가 뜨면 스탬프 찍고 정지, 전원 확인 후 진행'] },
-    stampMandate: { img: 'img/icons/stamp-ok.png', name: '스탬프 · 법등 해제', lines: ['법등 해제 후 자기 속성 스탬프 찍기'] },
-    stampHalo: { img: 'img/icons/stamp-ok.png', name: '스탬프 · 광배 해제', lines: ['광배 해제 후 자기 속성 스탬프 찍기'] },
+    stamp: { img: 'img/icons/stamp-ok.png', name: 'OK콘 · 전조', lines: ['전조가 뜨면 스탬프를 찍고 전원 확인 후 전조 클리어'] },
+    stampMandate: { img: 'img/icons/stamp-ok.png', name: 'OK콘 · 법등 해제', lines: ['법등 해제 후 자기 속성 스탬프 찍기'] },
+    stampHalo: { img: 'img/icons/stamp-ok.png', name: 'OK콘 · 광배 해제', lines: ['광배 해제 후 자기 속성 스탬프 찍기'] },
     // 베르수시아
     mandate: { img: I('v-mandate'), name: '6속성의 법등', lines: ['해당 속성 보스 공격 UP', '주는 피해 상한: 400만에서 남은 법등 1개당 50만 DOWN', '해당 속성 파티가 파괴의 시련을 풀면 해제', '6속성을 모두 풀어야 파괴의 법등(게이지 상승 3배)도 사라짐'] },
     vtrial: { img: I('v-trial'), name: '파괴의 시련', lines: ['주는 피해 상한 100만 · 턴 종료 시 아군 HP 10% 감소 + 랜덤 약체 2개', '해제: 150hit + 오의 10회 (또는 10턴 경과)'] },
@@ -57,11 +57,11 @@
     gauge: { img: I('v-gauge'), name: '파괴의 힘 (제네시스 게이지)', lines: ['누가 턴을 넘길 때마다 +0.5% (파괴의 법등·광등 동안 +1.5%) · 전조 실패 시 +1%', 'G50(HP 51%)에 정토 · G100(HP 16%)에 정토(MAX)', 'G100 때 HP 50% 이상이거나 광등이 남아 있으면 전원 사망'] },
     halo: { img: I('v-halo'), name: '파괴의 광등', lines: ['제네시스 게이지 상승 가속', '6속성 광배를 모두 풀면 해제'] },
     wing: { img: I('v-wing'), name: '창세의 일익', lines: ['보스 공격·방어 UP · 주는 피해 증가', '통상공격이 파괴속성 + 파괴 추가 피해'] },
-    k1: { img: I('v-k1'), name: '사왕천', lines: ['턴 종료 시 전체 공격 · HP 20%×Lv 이하 캐릭터 사망', '해제: 공격행동 5 / 6 / 7회 (Lv1 / 2 / 3)'] },
-    k2: { img: I('v-k2'), name: '도리천', lines: ['보스 통상공격 시 Lv만큼의 인원 어빌 재사용 +2턴', '해제: 오의 4 / 5 / 6회'] },
-    k3: { img: I('v-k3'), name: '야마천', lines: ['보스 통상공격 시 랜덤 약체 2×Lv개 (Lv2부터 내성·무효 무시)', '해제: 어빌 대미지 3000만 / 3500만 / 4000만'] },
-    k4: { img: I('v-k4'), name: '도솔천', lines: ['Lv1 2회 행동 · Lv2 파괴 추가 피해 · Lv3 3회 행동', '해제: TA 3 / 4 / 5회'] },
-    k5: { img: I('v-k5'), name: '화락천', lines: ['보스 통상공격 시 랜덤 무속성 5hit (Lv만큼 강해짐)', '해제: 40 / 60 / 80hit'] }
+    k1: { img: I('v-k1'), name: '사왕천', lines: ['턴 종료시 전체공격 후 HP 20% × Lv 이하인 캐릭터 사망', '해제: 공격행동 5 / 6 / 7회 (Lv1 / 2 / 3)'] },
+    k2: { img: I('v-k2'), name: '도리천', lines: ['통상공격시 Lv × 인원 수의 어빌 쿨타임 +2턴', '해제: 오의 4 / 5 / 6회 (Lv1 / 2 / 3)'] },
+    k3: { img: I('v-k3'), name: '야마천', lines: ['통상공격시 랜덤디버프 × Lv 개 부여', '◆ Lv2부터 약체내성을 무시', '해제: 어빌 대미지 3000만 / 3500만 / 4000만 (Lv1 / 2 / 3)'] },
+    k4: { img: I('v-k4'), name: '도솔천', lines: ['Lv에 비례해 순차적으로 2회 행동 / 파괴 대미지 / 3회 행동', '해제: TA 3 / 4 / 5회 (Lv1 / 2 / 3)'] },
+    k5: { img: I('v-k5'), name: '화락천', lines: ['통상공격시 Lv에 비례해서 강해지는 랜덤타겟 무속성 대미지 5hit', '해제: 40 / 60 / 80hit (Lv1 / 2 / 3)'] }
   };
 
   // Debuffs the boss puts on the party. Written as {이름} in pattern text; shown as the in-game icon (img/icons/debuffs.webp,
@@ -146,7 +146,7 @@
               { k: '3번 실패', v: '서브까지 HP 100% 무속성 피해' }] },
             { hp: null, kind: 'hp', when: '리베라티오 다음 턴', name: '하늘 용들의 시련', cond: '6턴 안에 TA 18회 또는 오의 18회', icons: ['skytrial', 'pearl1', 'pearl2', 'pearl3', 'pearl4', 'pearl5', 'pearl6'], lines: [
               '시련 동안 보스 공격 없음',
-              '해제 시 자기 속성 구슬 해제 (강제 해제 X)',
+              '해제 시 자기 속성 구슬 해제', '시에테 등 강제 해제 X',
               '남은 구슬 1개 이상: 보스 공격 UP · 4개 이상: 방어 UP',
               '주는 피해 상한: 400만에서 남은 구슬 1개당 60만 DOWN'] },
             { hp: null, kind: 'note', name: '광륜 (시련이 끝난 뒤)', lines: [
@@ -192,7 +192,7 @@
           range: '100 – 81%', tone: 'red', summary: '사과 · 디 엔드',
           rows: [
             { hp: 100, at: '개막', kind: 'hp', danger: true, name: '파라다이스 로스트', icons: ['appleRed', 'appleBlue', 'appleYellow', 'appleGreen'], lines: [{ reset: '9분', start: true }, '전체 무속성 5만 + 사과 2개', '노란 사과 {@appleYellow}는 바로 해제'] },
-            { hp: 100, when: '다음 턴', kind: 'hp', danger: true, name: '디 엔드', cond: '3000만 대미지', lines: ['못 풀면 서브 포함 전원 사망'] },
+            { hp: 100, when: '다음 턴', kind: 'hp', danger: true, name: '디 엔드', cond: '3000만 대미지', lines: ['해제 실패시 서브를 포함해 전원 사망'] },
             { hp: null, kind: 'ct', name: '100~81%', note: '포스포로스·이브리스 해제 시 확률로 테세라 전조', lines: [
               { n: '포스포로스', c: '약체 7회', e: '랜덤 5hit 20배 + 전체 6000 · {강압}{암흑}' },
               { n: '이브리스', c: '디스펠 2회', e: '랜덤 5hit 20배 + 전체 6000 · 보스 피해 컷·추가 피해' },
@@ -254,8 +254,8 @@
               '주는 피해 상한: 남은 시련 6개면 100만 ~ 1개면 400만'] },
             { hp: null, when: '다음 턴', kind: 'hp', name: '안티바실레이아', cond: '66hit / 어빌 12회 / 오의 6회 중 뜬 조건', lines: [
               '전체 120배',
-              '해제 시 자기 속성 시련 해제 → HP가 10%보다 낮아질 수 있음',
-              '같은 속성끼리는 먼저 푼 한 명만 · 강제 해제 X',
+              '해제 시 해당 속성 시련과 HP 10% 하한 소거',
+              '시에테 등 강제 해제 X',
               '못 풀면 다른 조건으로 재등장 (최대 2번)'] },
             { hp: null, kind: 'ct', name: '아키시온 아포칼립스 (20~0%)', cond: '페이탈 체인', lines: ['전체 3hit 30배 · {언데드}'] },
             { hp: 13, at: '13%', kind: 'hp', danger: true, name: '포스포로스 아포칼립스', cond: '9999만 9999 대미지', lines: ['전체 3hit 30배 · {강압} · 보스 피해 50% 컷'] },
@@ -278,7 +278,7 @@
         {
           range: '100 – 81%', tone: 'red', summary: '파괴의 시련',
           rows: [
-            { hp: 100, at: '개막', kind: 'hp', stamp: 'stampMandate', name: '파괴의 시련', cond: '150hit + 오의 10회', icons: ['vtrial', 'mandate'], lines: ['턴 종료 시 아군 HP 10% 감소 + 랜덤 약체 2개', '해제 시 자기 속성 법등 해제 (강제 해제 X)'] },
+            { hp: 100, at: '개막', kind: 'hp', stamp: 'stampMandate', name: '파괴의 시련', cond: '150hit + 오의 10회', icons: ['vtrial', 'mandate'], lines: ['턴 종료 시 아군 HP 10% 감소 + 랜덤 약체 2개', '해제 시 자기 속성 법등 해제', '시에테 등 강제 해제 X'] },
             { hp: null, kind: 'ct', name: '100~81%', lines: [
               { n: '신광', c: '약체 10회', e: '전체 30배 · FC -30% · 보스 어빌·오의 피해 70% 컷' },
               { n: '윤회', c: '50hit', e: '랜덤 6hit 60배 · {공격 DOWN}{방어 DOWN} · 보스 유리속성 추가 피해' }] },
@@ -322,9 +322,9 @@
             { hp: null, when: '정토 처리 후', kind: 'note', name: '상시 효과 변화', icons: ['halo', 'k1', 'k2', 'k3', 'k4', 'k5'], lines: [
               '보스 약체 리셋 · 파괴의 광등 + 6속성 광배',
               '턴 종료 시 사왕천~화락천 중 하나 랜덤 부여 · 못 풀면 매 턴 Lv+1 (최대 3)',
-              'Lv2 이상에서 풀면 보스 스테이터스 감소 · 그 턴엔 추가 부여 없음',
+              'Lv2 이상일때 -천을 해제하면 그 턴엔 추가로 생기지 않으며 베르수시아의 스테이터스가 감소',
               'Lv2 이상이 남거나 그 턴 피해 5000만 미만이면 타화자재'] },
-            { hp: null, kind: 'hp', stamp: 'stampHalo', name: '6속성의 광배', cond: '자기 속성 파티가 전조 하나 해제', icons: ['halo'], lines: ['남아 있으면 게이지 상승 가속'] },
+            { hp: null, kind: 'hp', stamp: 'stampHalo', name: '6속성의 광배', cond: '전조 한 개 해제', icons: ['halo'], lines: ['자기 속성 파티가 전조 하나 해제 → 자기 속성 광배 해제', '남아 있으면 게이지 상승 가속'] },
             { hp: null, kind: 'ct', name: 'G50 ~ G100', lines: [
               { n: '정토', c: '디스펠 5회 + 페이탈 체인', t: '디스펠 6회 + 페이탈 체인', e: '전체 16hit 48배 · {강압}{참격} · 강화 5턴 단축' },
               { n: '무상', c: '약체 15회 + 300만 이상 대미지 8회', t: '약체 18회 + 300만 이상 대미지 10회', e: '랜덤 4hit 80배 · 보스 어빌·오의 피해 70% 컷' },
@@ -337,13 +337,13 @@
             { hp: 20, at: 'G100', kind: 'hp', danger: true, name: '정토 (G100 또는 HP 16%)', icons: ['gauge', 'wing'], lines: [
               '전체 랜덤 속성 16hit 64배',
               'HP 15% 하한·사왕천 등·타화자재 해제 · 창세의 일익 · 피해 컷 무효',
-              '이때 HP 50% 이상이거나 광등이 남아 있으면 전원 사망'] },
+              '이때 HP 50% 이상이거나 광등이 남아 있으면 전원 사망',
+              '진입에 방어 DC를 사용하는 걸 고려'] },
             { hp: null, when: '다음 턴부터 5턴', danger: true, kind: 'hp', name: '신격 1주차', lines: [
-              '못 풀면 서브 포함 전원 사망',
+              '해제 실패시 서브를 포함해 전원 사망',
               '다섯 전조가 한 턴씩 랜덤 순서로',
               { c: '120hit' }, { c: '1억 대미지' }, { c: '600만 이상 대미지 5회' }, { c: '디스펠 6회' }, { c: '약체 15회' }] },
             { hp: null, when: '그다음 5턴', danger: true, kind: 'hp', name: '신격 2주차', lines: [
-              '다섯 전조가 한 턴씩 랜덤 순서로',
               '3주차도 같은 폭으로 증가',
               { c: '240hit' }, { c: '2억 대미지' }, { c: '600만 이상 대미지 10회' }, { c: '디스펠 12회' }, { c: '약체 30회' }] }
           ]

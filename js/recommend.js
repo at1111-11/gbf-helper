@@ -19,17 +19,31 @@
     return text.split(/\*([^*]+)\*/).map((part, k) => k % 2 ? h('em', { text: part }) : part).filter(x => x !== '');
   }
 
-  function card(s) {
-    return h('article', { class: 'rc-card' },
-      h('div', { class: `rc-hero theme-${s.theme}`, 'aria-hidden': 'true' },
-        s.bg ? h('img', { class: 'rc-bg', src: s.bg, alt: '' }) : null,
-        h('span', { class: `rc-portrait is-${s.fit}` }, h('img', { src: s.img, alt: '' }))),
-      // The name is the link ("★ 이름", one space after the star); no separate address line.
+  // The round picture is the link (opens the site); the name in the ribbon is plain text.
+  function card(s, i) {
+    return h('article', { class: 'rc-card', id: `rc-site-${i}` },
+      h('div', { class: `rc-hero theme-${s.theme}` },
+        s.bg ? h('img', { class: 'rc-bg', src: s.bg, alt: '', 'aria-hidden': 'true' }) : null,
+        h('a', {
+          class: `rc-portrait is-${s.fit}`, href: s.url, target: '_blank', rel: 'noopener noreferrer',
+          title: `${s.name} 열기`, 'aria-label': `${s.name} 사이트 열기`
+        }, h('img', { src: s.img, alt: '' }))),
       h('h3', { class: 'rc-ribbon' },
-        h('a', { class: 'rc-link', href: s.url, target: '_blank', rel: 'noopener noreferrer' },
-          s.star ? h('span', { class: 'rc-star', text: '★' }) : null, s.star ? ' ' : null, s.name)),
+        s.star ? h('span', { class: 'rc-star', text: '★' }) : null, s.star ? ' ' : null, s.name),
       h('div', { class: 'rc-body' },
         h('p', { class: 'rc-desc' }, desc(s.desc))));
+  }
+
+  // Contents banner: one small entry per site; pressing it scrolls to that card.
+  function toc() {
+    return h('nav', { class: 'rc-toc', 'aria-label': '사이트 목차' }, SITES.map((s, i) =>
+      h('button', {
+        type: 'button', class: 'rc-toc-item', dataset: { target: `rc-site-${i}` },
+        onclick: () => {
+          const el = document.getElementById(`rc-site-${i}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, h('span', { class: `rc-toc-pic theme-${s.theme} is-${s.fit}` }, h('img', { src: s.img, alt: '' })), h('span', { class: 'rc-toc-name', text: s.name }))));
   }
 
   function render() {
@@ -37,8 +51,8 @@
     if (!host) return;
     host.replaceChildren(
       h('h2', { class: 'ribbon' }, h('span', { text: '사이트' })),
+      toc(),
       h('div', { class: 'rc-list' }, SITES.map(card)));
   }
-
   root.GBF_RECOMMEND = { SITES, mount() { render(); }, render };
 })(globalThis);

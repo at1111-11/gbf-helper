@@ -137,16 +137,14 @@ select.in option { background: #2a1910; }
 .empty { text-align: center; color: var(--muted); padding: 18px 8px; }
 
 /* ---------- Monthly tab ---------- */
-/* Monthly totals: [icon] 1/2 on one line per kind, fixed equal columns so changing numbers never push anything around.
-   The countdown sits at the right on wide panels and on its own row (split by a line) on narrow ones. */
+/* Monthly totals: [icon] 1/2 on one line per kind, then the reset line under a thin rule. */
 .status {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 10px;
-  margin: 0 0 6px; padding: 5px 8px; border-radius: 6px;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px;
+  margin: 0 0 6px; padding: 6px 10px; border-radius: 6px;
   background: rgba(0, 0, 0, .3); border: 1px solid var(--frame);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .4);
 }
-/* Four totals spread with equal gaps; each value keeps the width of its largest number (see .stock-ghost). */
-.status-left { display: flex; justify-content: space-between; align-items: center; gap: 6px; min-width: 0; }
+.status-left { display: flex; justify-content: space-evenly; align-items: center; gap: 6px; min-width: 0; }
 .stock { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; line-height: 1.2; }
 .stock .item-ico { width: 17px; height: 17px; flex: none; }
 .stock-val { display: inline-grid; }
@@ -154,28 +152,29 @@ select.in option { background: #2a1910; }
 .stock-ghost { visibility: hidden; }
 .stock-num { font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .stock small { color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
-/* "리셋까지 5일 5시간" on one line, the date under it. Fixed width (fits the longest "30일 23시간" with room
-   to spare) so the countdown never shifts the counts or touches the divider line. */
+/* Reset line (monthly and weekly): two equal halves split by a thin line, each half centered. */
 .status-reset {
-  display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 0;
-  width: 134px; padding-left: 12px; border-left: 1px solid rgba(217, 183, 122, .25);
-  line-height: 1.2; white-space: nowrap; overflow: hidden;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center;
+  padding-top: 6px; border-top: 1px solid rgba(217, 183, 122, .25); line-height: 1.25; white-space: nowrap;
 }
-@media (max-width: 560px) {
-  .status { grid-template-columns: minmax(0, 1fr); }
-  .status-reset {
-    width: auto; flex-direction: row; justify-content: space-between; align-items: baseline;
-    padding: 4px 0 0; border-left: 0; border-top: 1px solid rgba(217, 183, 122, .25);
-  }
+.reset-cell { display: flex; justify-content: center; align-items: baseline; gap: 3px; min-width: 0; overflow: hidden; }
+.reset-cell + .reset-cell { border-left: 1px solid rgba(217, 183, 122, .25); }
+.status-reset small { font-size: 11.5px; color: var(--muted); }
+.status-reset b { font-size: 14px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.status-reset b.reset-date { font-size: 13px; color: var(--cream); }
+/* Weekly box holds only the reset line. */
+.status-week .status-reset { padding-top: 0; border-top: 0; }
+/* Very narrow panel: drop the "다음 리셋" word and step the text down so both halves still fit. */
+@media (max-width: 340px) {
+  .reset-cell + .reset-cell small { display: none; }
+  .status-reset small { font-size: 10.5px; }
+  .status-reset b { font-size: 13px; }
+  .status-reset b.reset-date { font-size: 12px; }
 }
-.reset-line { display: flex; align-items: baseline; gap: 2px; }
-.status-reset small { font-size: 10px; color: var(--muted); }
-.status-reset b { font-size: 12.5px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.status-week { margin-bottom: 6px; }
 
 /* Weekly caps: one row styled like the monthly shops (thumbnail, title with countdown, chips). */
 .weekly-list { margin-bottom: 4px; }
-.wk-left { margin-left: 6px; font-size: 10.5px; color: var(--muted); white-space: nowrap; }
-.wk-left b { color: var(--gold); font-size: 11.5px; font-variant-numeric: tabular-nums; }
 /* A chip with a word in front of its icon (주간 이름, 샌드박스 미션/상점). The ✓ sits on the icon. */
 .chip-item.has-label { padding-left: 6px; }
 .chip-label { font-size: 11px; font-weight: 800; letter-spacing: -.3px; }
@@ -762,8 +761,17 @@ button.chip-item:hover { filter: brightness(1.08); }
 }
 .rc-ribbon::before { left: 10px; }
 .rc-ribbon::after { right: 10px; }
-.rc-link { color: inherit; text-decoration: none; display: inline; }
-.rc-link:hover, .rc-link:focus-visible { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+.rc-card { scroll-margin-top: calc(var(--top-h) + 10px); }
+/* The round picture opens the site */
+a.rc-portrait { cursor: pointer; transition: transform .15s, box-shadow .15s; }
+a.rc-portrait:hover, a.rc-portrait:focus-visible { transform: scale(1.05); box-shadow: 0 0 0 3px #f6ecd6, 0 0 0 6px rgba(243, 205, 109, .85), 0 6px 14px rgba(40, 20, 5, .55); outline: none; }
+/* Contents banner on top */
+.rc-toc { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; max-width: 460px; margin: 0 auto 10px; padding: 7px 8px; border-radius: 8px; background: linear-gradient(180deg, #5b3b24, #33200f); border: 1px solid #b08850; box-shadow: inset 0 1px 0 rgba(255, 230, 180, .25), 0 2px 4px rgba(0, 0, 0, .45); }
+.rc-toc-item { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 3px; border-radius: 999px; border: 1px solid rgba(217, 183, 122, .5); background: rgba(0, 0, 0, .25); color: #f8eedb; font: 700 12.5px/1.2 "Gowun Batang Note", "Gowun Batang", serif; }
+.rc-toc-item:hover, .rc-toc-item:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
+.rc-toc-pic { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 0 0 1px #b08850; flex: none; }
+.rc-toc-pic img { width: 100%; height: 100%; object-fit: cover; }
+.rc-toc-pic.is-logo img { width: 80%; height: 80%; object-fit: contain; }
 .rc-star { color: var(--gold); font-size: 13px; }
 .rc-body {
   padding: 12px 14px 14px; text-align: center; color: #f3ead8; font-family: var(--serif); line-height: 1.6;

@@ -43,9 +43,16 @@
               h('small', { text: `/${num(total[kind], 0)}` })),
             h('span', { class: 'stock-ghost', 'aria-hidden': 'true' },
               h('b', { text: num(total[kind], 0) }), h('small', { text: `/${num(total[kind], 0)}` })))))),
-      h('div', { class: 'status-reset', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
-        h('span', { class: 'reset-line' }, h('small', { text: '리셋까지 ' }), h('b', { id: 'resetLeft', text: C.formatLeft(next - now).replace(' 남음', '') })),
-        h('small', { id: 'resetAt', text: `${p.month}/${p.day}(${WEEKDAYS[p.weekday]}) 05:00` })));
+      resetRow(now, next, 'resetLeft', 'resetAt'));
+  }
+
+  // Reset line shared by the weekly and monthly boxes: two equal halves, each centered —
+  // [리셋까지 4일 8시간] | [다음 리셋 12/1(화) 05:00].
+  function resetRow(now, next, leftId, atId) {
+    const p = C.jstParts(next);
+    return h('div', { class: 'status-reset', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
+      h('span', { class: 'reset-cell reset-line' }, h('small', { text: '리셋까지 ' }), h('b', { id: leftId, text: C.formatLeft(next - now).replace(' 남음', '') })),
+      h('span', { class: 'reset-cell' }, h('small', { text: '다음 리셋 ' }), h('b', { class: 'reset-date', id: atId, text: `${p.month}/${p.day}(${WEEKDAYS[p.weekday]}) 05:00` })));
   }
 
   // ---- Weekly caps: one row in the same look as the monthly shops ----
@@ -53,9 +60,6 @@
   function weeklyQty(x) { return x.up && w().opts[x.up.key] ? x.up.qty : x.qty; }
 
   function weeklyRow() {
-    const now = new Date();
-    const next = C.nextWeeklyReset(now);
-    const p = C.jstParts(next);
     const doneCount = D.WEEKLY.filter(x => w().done[x.id]).length;
     const allDone = doneCount === D.WEEKLY.length;
     const toggleAll = () => { for (const x of D.WEEKLY) { if (allDone) delete w().done[x.id]; else w().done[x.id] = true; } commit(); };
@@ -80,8 +84,6 @@
       h('div', { class: 'shop-body' },
         h('div', { class: 'shop-title' },
           h('b', { text: '이번 주' }),
-          h('small', { class: 'wk-left', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
-            '리셋까지 ', h('b', { id: 'weekLeft', text: C.formatLeft(next - now).replace(' 남음', '') })),
           h('span', { class: 'count' + (allDone ? ' done' : ''), text: `${doneCount}/${D.WEEKLY.length}` })),
         h('div', { class: 'chips' }, items)));
   }
@@ -277,6 +279,7 @@
     const rows = editing ? groups.map(editShop) : groups.map(shopRow).filter(Boolean);
     host.replaceChildren(...[
       editing ? null : h('h2', { class: 'ribbon' }, h('span', { text: '주간 교환' })),
+      editing ? null : h('div', { class: 'status status-week' }, resetRow(new Date(), C.nextWeeklyReset(new Date()), 'weekLeft', 'weekAt')),
       editing ? null : h('div', { class: 'weekly-list' }, weeklyRow()),
       h('h2', { class: 'ribbon' }, h('span', { text: editing ? '교환소 편집' : '월간 교환' })),
       editing ? null : statusBar(groups),

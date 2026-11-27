@@ -36,7 +36,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.deepEqual([await stock('gold'), await stock('half'), await stock('seed'), await stock('quartz')], ['0', '0', '0', '0']);
     assert.deepEqual(await totals(), ['/2', '/1,010', '/1,700', '/40']);
     // Order: 주간 교환 → weekly box → 월간 교환 → totals box → shops. Each total is one line ([icon] 0/2).
-    assert.deepEqual(await page.locator('#tab-monthly > *').evaluateAll(els => els.slice(0, 5).map(e => e.classList[0])), ['ribbon', 'weekly-list', 'ribbon', 'status', 'shops']);
+    assert.deepEqual(await page.locator('#tab-monthly > *').evaluateAll(els => els.slice(0, 6).map(e => e.classList[0])), ['ribbon', 'status', 'weekly-list', 'ribbon', 'status', 'shops']);
     assert.deepEqual(await page.locator('#tab-monthly > .ribbon').allInnerTexts(), ['주간 교환', '월간 교환']);
     assert.ok(await page.locator('.stock').evaluateAll(s => s.every(x => { const n = x.querySelector('.stock-num').getBoundingClientRect(), t = x.querySelector('small').getBoundingClientRect(); return Math.abs(n.top + n.height / 2 - (t.top + t.height / 2)) < 4; })), 'each total reads on one line');
     // Weekly: 아티팩트 50 (패스 75), FP 5,000 (2배 10,000), 보정석 100; checking marks it done; options stay after reload.
@@ -65,22 +65,27 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await expect(page.locator('#tab-monthly .shop[data-group="sandbox"] .chip-label')).toHaveText(['미션', '상점']);
     checks.push('주간 교환 (아티팩트 50/패스 75 · FP 5,000/2배 10,000 · 보정석 100) above 월간 교환; monthly totals box under 월간 교환 with one-line [icon] n/total incl. 샌드박스 쿼츠 40');
     await expect(page.locator('#resetAt')).toHaveText(/^\d+\/1\(.\) 05:00$/);
-    await expect(page.locator('.reset-line')).toHaveText(/^리셋까지 \d+(일 \d+시간|시간 \d+분|분)$/);
-    // Even the longest countdown fits its box and keeps clear of the divider line, at panel and website widths.
+    await expect(page.locator('#tab-monthly > .status:not(.status-week) .reset-line')).toHaveText(/^리셋까지 \d+(일 \d+시간|시간 \d+분|분)$/);
+    // Reset lines (weekly and monthly): two equal halves, each centered; even the longest countdown fits at panel and website widths.
+    await expect(page.locator('#weekAt')).toHaveText(/^\d+\/\d+\(월\) 05:00$/);
     for (const w of [300, 360, 480, 1280]) {
       await page.setViewportSize({ width: w, height: 800 });
       const fit = await page.evaluate(() => {
-        const box = document.querySelector('.status-reset'), line = box.querySelector('.reset-line'), b = document.getElementById('resetLeft'), keep = b.textContent;
         const out = [];
-        for (const t of ['30일 23시간', '23시간 59분']) {
-          b.textContent = t;
-          const bl = box.getBoundingClientRect(), ll = line.getBoundingClientRect(), side = getComputedStyle(box).borderLeftWidth !== '0px';
-          out.push(line.scrollWidth <= line.clientWidth + 1 && ll.left >= bl.left && (!side || ll.left - bl.left >= 14));
+        for (const id of ['resetLeft', 'weekLeft']) {
+          const b = document.getElementById(id), keep = b.textContent, row = b.closest('.status-reset');
+          for (const t of ['30일 23시간', '23시간 59분']) {
+            b.textContent = t;
+            const cells = [...row.querySelectorAll('.reset-cell')];
+            const halves = Math.abs(cells[0].getBoundingClientRect().width - cells[1].getBoundingClientRect().width) <= 1;
+            const centered = cells.every(c => { const r = c.getBoundingClientRect(), k = [...c.children].map(x => x.getBoundingClientRect()).filter(r => r.width > 0); const mid = (k[0].left + k[k.length - 1].right) / 2; return Math.abs(mid - (r.left + r.right) / 2) <= 2; });
+            out.push(halves && centered && cells.every(c => c.scrollWidth <= c.clientWidth + 1));
+          }
+          b.textContent = keep;
         }
-        b.textContent = keep;
         return out.every(Boolean) && ![...document.querySelectorAll('.stock')].some(s => s.scrollWidth > s.clientWidth + 1);
       });
-      assert.ok(fit, `reset countdown fits clear of the divider at ${w}px`);
+      assert.ok(fit, `reset lines are two centered halves and fit at ${w}px`);
     }
     await page.setViewportSize({ width: 360, height: 760 });
     assert.deepEqual(await page.locator('#tab-monthly .shop').evaluateAll(els => els.map(e => e.dataset.group).filter(g => g !== 'weekly')), ['fp', 'pendant', 'casino', 'skyleap', 'daily', 'treasure', 'sandbox']);
@@ -99,8 +104,22 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await expect(page.locator('#tab-recommend .rc-hero img[src="img/vane.webp"]')).toHaveCount(0);
     assert.deepEqual(await page.locator('#tab-recommend .rc-ribbon').allTextContents().then(t => t.map(x => x.trim())), ['★ GBF.WIKI', '★ 루리아노트', 'GBFAL']);
     await expect(page.locator('#tab-recommend > .ribbon')).toHaveText('사이트'); // section line like the other tabs
-    assert.deepEqual(await page.locator('#tab-recommend .rc-ribbon a').evaluateAll(a => a.map(x => x.getAttribute('href'))), ['https://gbf.wiki/', 'https://lyria-note-korean.com/', 'https://mizagbf.github.io/GBFAL/index.html']); // the name is the link
-    await expect(page.locator('#tab-recommend .rc-url')).toHaveCount(0); // the name link is enough, no address line
+    // The round picture is the link (2026-11-27 request); the name is plain text.
+    assert.deepEqual(await page.locator('#tab-recommend a.rc-portrait').evaluateAll(a => a.map(x => x.getAttribute('href'))), ['https://gbf.wiki/', 'https://lyria-note-korean.com/', 'https://mizagbf.github.io/GBFAL/index.html']);
+    await expect(page.locator('#tab-recommend .rc-ribbon a')).toHaveCount(0);
+    await expect(page.locator('#tab-recommend .rc-url')).toHaveCount(0); // no address line
+    // Contents banner on top: one entry per site, pressing it scrolls to the card.
+    assert.deepEqual(await page.locator('#tab-recommend .rc-toc .rc-toc-name').allInnerTexts(), ['GBF.WIKI', '루리아노트', 'GBFAL']);
+    const tocY = await page.locator('#tab-recommend .rc-toc').evaluate(e => e.getBoundingClientRect().top);
+    const firstCardY = await page.locator('#tab-recommend .rc-card').first().evaluate(e => e.getBoundingClientRect().top);
+    assert.ok(tocY < firstCardY, 'the contents banner sits above the cards');
+    await page.setViewportSize({ width: 360, height: 500 });
+    await page.locator('.rc-toc-item[data-target="rc-site-2"]').click();
+    await page.waitForTimeout(700);
+    const landed = await page.evaluate(() => { const c = document.getElementById('rc-site-2').getBoundingClientRect(); const top = document.querySelector('.top').getBoundingClientRect().bottom; return c.top >= top - 1 && c.top < window.innerHeight; });
+    assert.ok(landed, 'GBFAL card is scrolled into view under the tabs');
+    await page.setViewportSize({ width: 360, height: 760 });
+    await page.evaluate(() => window.scrollTo(0, 0));
     assert.ok(await page.locator('#tab-recommend .rc-desc').allInnerTexts().then(t => t.every(x => !x.trim().endsWith('.'))), 'no trailing period');
     assert.ok(await page.locator('#tab-recommend .rc-desc').evaluateAll(d => d.every(x => getComputedStyle(x).textAlign === 'center')), 'descriptions are centered');
     assert.ok(await page.locator('#tab-recommend .rc-hero img').evaluateAll(a => a.every(i => i.complete && i.naturalWidth > 0)), 'site pictures load');
@@ -619,7 +638,12 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await expect(page.locator('.pt-stamp')).toHaveCount(3); // G50 정토, 법등 해제, 광배 해제
     await expect(page.locator('.pt-card', { hasText: '신격 3주차' })).toHaveCount(0);
     const week2 = await page.locator('.pt-card', { hasText: '신격 2주차' }).locator('li').allInnerTexts();
-    assert.deepEqual(week2.slice(0, 2), ['다섯 전조가 한 턴씩 랜덤 순서로', '3주차도 같은 폭으로 증가'], 'week-3 note sits right under the 다섯 전조 line: ' + week2);
+    assert.equal(week2[0], '3주차도 같은 폭으로 증가', 'week 2 opens with the week-3 note (the 다섯 전조 line was removed on request): ' + week2);
+    assert.ok(!week2.some(l => l.includes('다섯 전조')), 'no 다섯 전조 line in week 2');
+    const g100 = await page.locator('.pt-card', { hasText: '정토 (G100' }).innerText();
+    assert.ok(g100.includes('진입에 방어 DC를 사용하는 걸 고려'), 'G100 suggests the defence DC');
+    const halo = await page.locator('.pt-card', { hasText: '6속성의 광배' }).innerText();
+    assert.ok(halo.includes('전조 한 개 해제') && halo.includes('자기 속성 파티가 전조 하나 해제'), '광배 wording');
     await expect(page.locator('#tab-pattern')).not.toContainText('1주차의 3배');
     await expect(page.locator('.pt-card .pt-name', { hasText: '정토 (G100 또는 HP 16%)' })).toHaveCount(1);
     await expect(page.locator('.pt-card .pt-name', { hasText: '정토 (G50 또는 HP 51%)' })).toHaveCount(1);
@@ -662,7 +686,10 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     const lz = await page.locator('.pt-card .pt-name').allInnerTexts();
     assert.equal(lz[lz.indexOf('묵시록의 나팔') + 1], '60~21%', '루시제로 60~21% CT right after 묵시록의 나팔');
     assert.equal(lz[lz.indexOf('안티바실레이아') + 1], '아키시온 아포칼립스 (20~0%)', '루시제로 20~0% CT right after 안티바실레이아');
-    await expect(page.locator('.pt-card', { hasText: '안티바실레이아' })).toContainText('해제 시 자기 속성 시련 해제');
+    await expect(page.locator('.pt-card', { hasText: '안티바실레이아' })).toContainText('해제 시 해당 속성 시련과 HP 10% 하한 소거');
+    await expect(page.locator('.pt-card', { hasText: '안티바실레이아' })).toContainText('시에테 등 강제 해제 X');
+    await expect(page.locator('.pt-card', { hasText: '안티바실레이아' })).not.toContainText('같은 속성끼리');
+    await expect(page.locator('.pt-card', { hasText: '디 엔드' }).first()).toContainText('해제 실패시 서브를 포함해 전원 사망');
     await page.locator('.pt-card', { hasText: '절대부정일 때' }).locator('.pt-sub .tip-icon.pt-inline').first().hover();
     await expect(page.locator('.float-tip.show')).toContainText('절대부정');
     await page.mouse.move(2, 2);
