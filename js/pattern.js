@@ -42,7 +42,7 @@
     return h('div', { class: 'pt-opening' },
       h('div', { class: 'pt-opening-head' }, h('b', { text: '시작할 때' }), icons(o.icons),
         g ? h('span', { class: 'pt-gauge' }, h('small', { text: g.label }), h('img', { src: g.img, alt: g.label })) : null),
-      h('ul', null, o.lines.map(t => h('li', { text: t }))),
+      h('ul', null, o.lines.map(t => h('li', null, rich(t)))),
       g ? h('div', { class: 'pt-gauge-levels' },
         h('div', { class: 'pt-gauge-title', text: g.title }),
         g.levels.map(lv => h('div', { class: 'pt-gauge-row' },

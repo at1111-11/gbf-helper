@@ -137,41 +137,45 @@ select.in option { background: #2a1910; }
 .empty { text-align: center; color: var(--muted); padding: 18px 8px; }
 
 /* ---------- Monthly tab ---------- */
-/* Monthly totals: [icon] 1/2 on one line per kind, then the reset line under a thin rule. */
+/* Summary box (주간 and 월간): totals with equal gaps on the left, the countdown centered in its own space
+   on the right; narrow panels put the countdown on a centered line under the totals. */
 .status {
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px;
-  margin: 0 0 6px; padding: 6px 10px; border-radius: 6px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 12px;
+  margin: 0 0 6px; padding: 7px 10px; border-radius: 6px;
   background: rgba(0, 0, 0, .3); border: 1px solid var(--frame);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .4);
 }
-.status-left { display: flex; justify-content: space-evenly; align-items: center; gap: 6px; min-width: 0; }
-.stock { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; line-height: 1.2; }
-.stock .item-ico { width: 17px; height: 17px; flex: none; }
+.status-left { display: flex; justify-content: space-evenly; align-items: center; gap: 0; min-width: 0; } /* no gap: space-evenly alone keeps every space (edges too) equal */
+.stock { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; line-height: 1.2; }
+.stock .item-ico { width: 20px; height: 20px; flex: none; }
 .stock-val { display: inline-grid; }
 .stock-cur, .stock-ghost { grid-area: 1 / 1; }
 .stock-ghost { visibility: hidden; }
-.stock-num { font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.stock small { color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
-/* Reset line (monthly and weekly): two equal halves split by a thin line, each half centered. */
+.stock-num { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stock small { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
 .status-reset {
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center;
-  padding-top: 6px; border-top: 1px solid rgba(217, 183, 122, .25); line-height: 1.25; white-space: nowrap;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  width: 142px; padding-left: 12px; border-left: 1px solid rgba(217, 183, 122, .25);
+  line-height: 1.25; white-space: nowrap;
 }
-.reset-cell { display: flex; justify-content: center; align-items: baseline; gap: 3px; min-width: 0; overflow: hidden; }
-.reset-cell + .reset-cell { border-left: 1px solid rgba(217, 183, 122, .25); }
+.reset-line { display: flex; align-items: baseline; gap: 3px; }
 .status-reset small { font-size: 11.5px; color: var(--muted); }
 .status-reset b { font-size: 14px; color: var(--gold); font-variant-numeric: tabular-nums; }
-.status-reset b.reset-date { font-size: 13px; color: var(--cream); }
-/* Weekly box holds only the reset line. */
-.status-week .status-reset { padding-top: 0; border-top: 0; }
-/* Very narrow panel: drop the "다음 리셋" word and step the text down so both halves still fit. */
-@media (max-width: 340px) {
-  .reset-cell + .reset-cell small { display: none; }
-  .status-reset small { font-size: 10.5px; }
-  .status-reset b { font-size: 13px; }
-  .status-reset b.reset-date { font-size: 12px; }
+@media (max-width: 560px) {
+  .status { grid-template-columns: minmax(0, 1fr); }
+  .status-reset {
+    width: auto; flex-direction: row; justify-content: center; align-items: baseline; gap: 10px;
+    padding: 6px 0 0; border-left: 0; border-top: 1px solid rgba(217, 183, 122, .25);
+  }
 }
-.status-week { margin-bottom: 6px; }
+@media (max-width: 420px) {
+  .stock { gap: 3px; }
+  .stock .item-ico { width: 17px; height: 17px; }
+  .stock-num { font-size: 12.5px; }
+  .stock small { font-size: 10px; }
+  .status-reset small { font-size: 11px; }
+  .status-reset b { font-size: 13px; }
+}
 
 /* Weekly caps: one row styled like the monthly shops (thumbnail, title with countdown, chips). */
 .weekly-list { margin-bottom: 4px; }

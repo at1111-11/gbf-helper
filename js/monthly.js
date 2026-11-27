@@ -26,33 +26,44 @@
     return img ? h('img', { class: 'item-ico', src: img, alt: '' }) : h('i', { class: 'item-ico other' });
   }
 
-  // Monthly totals on one line ([icon] 1/2 …), the countdown to the next monthly reset beside or under them.
-  function statusBar(groups) {
-    const now = new Date();
-    const next = C.nextReset(now);
-    const p = C.jstParts(next);
-    const { left, total } = C.remaining(groups);
-    return h('div', { class: 'status' },
-      h('div', { class: 'status-left' }, ['gold', 'half', 'seed', 'quartz'].map(kind =>
-        h('span', { class: `stock kind-${kind}`, title: `${D.KINDS[kind].full} · 이번 달 교환한 수량` },
-          itemIcon(kind),
-          // An invisible copy of the largest value keeps the width fixed, so the evenly spaced totals never move.
-          h('span', { class: 'stock-val' },
-            h('span', { class: 'stock-cur' },
-              h('b', { class: 'stock-num', dataset: { kind }, text: num(total[kind] - left[kind], 0) }),
-              h('small', { text: `/${num(total[kind], 0)}` })),
-            h('span', { class: 'stock-ghost', 'aria-hidden': 'true' },
-              h('b', { text: num(total[kind], 0) }), h('small', { text: `/${num(total[kind], 0)}` })))))),
-      resetRow(now, next, 'resetLeft', 'resetAt'));
+  // One total: [icon] 1/2 on one line. An invisible copy of the largest value keeps the width fixed,
+  // so the evenly spaced totals never move when numbers change.
+  function stockEl(img, cur, total, kind, title) {
+    return h('span', { class: 'stock' + (kind ? ` kind-${kind}` : ''), title },
+      img ? h('img', { class: 'item-ico', src: img, alt: '' }) : h('i', { class: 'item-ico other' }),
+      h('span', { class: 'stock-val' },
+        h('span', { class: 'stock-cur' },
+          h('b', { class: 'stock-num', dataset: { kind: kind || '' }, text: num(cur, 0) }),
+          h('small', { text: `/${num(total, 0)}` })),
+        h('span', { class: 'stock-ghost', 'aria-hidden': 'true' },
+          h('b', { text: num(total, 0) }), h('small', { text: `/${num(total, 0)}` }))));
   }
 
-  // Reset line shared by the weekly and monthly boxes: two equal halves, each centered —
-  // [리셋까지 4일 8시간] | [다음 리셋 12/1(화) 05:00].
-  function resetRow(now, next, leftId, atId) {
+  // Summary box shared by 주간 and 월간: the totals (evenly spaced) and, in the same box, the countdown —
+  // at the right on wide panels, on its own centered line under the totals on narrow ones.
+  function summaryBox(stocks, now, next, leftId, atId, cls) {
     const p = C.jstParts(next);
-    return h('div', { class: 'status-reset', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
-      h('span', { class: 'reset-cell reset-line' }, h('small', { text: '리셋까지 ' }), h('b', { id: leftId, text: C.formatLeft(next - now).replace(' 남음', '') })),
-      h('span', { class: 'reset-cell' }, h('small', { text: '다음 리셋 ' }), h('b', { class: 'reset-date', id: atId, text: `${p.month}/${p.day}(${WEEKDAYS[p.weekday]}) 05:00` })));
+    return h('div', { class: 'status' + (cls ? ' ' + cls : '') },
+      h('div', { class: 'status-left' }, stocks),
+      h('div', { class: 'status-reset', title: `다음 리셋 ${p.month}월 ${p.day}일(${WEEKDAYS[p.weekday]}) 05:00` },
+        h('span', { class: 'reset-line' }, h('small', { text: '리셋까지 ' }), h('b', { id: leftId, text: C.formatLeft(next - now).replace(' 남음', '') })),
+        h('small', { class: 'reset-at', id: atId, text: `${p.month}/${p.day}(${WEEKDAYS[p.weekday]}) 05:00` })));
+  }
+
+  function statusBar(groups) {
+    const now = new Date();
+    const { left, total } = C.remaining(groups);
+    return summaryBox(['gold', 'half', 'seed', 'quartz'].map(kind =>
+      stockEl(D.KINDS[kind].img, total[kind] - left[kind], total[kind], kind, `${D.KINDS[kind].full} · 이번 달 교환한 수량`)),
+    now, C.nextReset(now), 'resetLeft', 'resetAt');
+  }
+
+  function weeklyBar() {
+    const now = new Date();
+    return summaryBox(D.WEEKLY.map(x => {
+      const qty = weeklyQty(x);
+      return stockEl(x.img, w().done[x.id] ? qty : 0, qty, 'w-' + x.id, `${x.name} · 이번 주`);
+    }), now, C.nextWeeklyReset(now), 'weekLeft', 'weekAt', 'status-week');
   }
 
   // ---- Weekly caps: one row in the same look as the monthly shops ----
@@ -279,7 +290,7 @@
     const rows = editing ? groups.map(editShop) : groups.map(shopRow).filter(Boolean);
     host.replaceChildren(...[
       editing ? null : h('h2', { class: 'ribbon' }, h('span', { text: '주간 교환' })),
-      editing ? null : h('div', { class: 'status status-week' }, resetRow(new Date(), C.nextWeeklyReset(new Date()), 'weekLeft', 'weekAt')),
+      editing ? null : weeklyBar(),
       editing ? null : h('div', { class: 'weekly-list' }, weeklyRow()),
       h('h2', { class: 'ribbon' }, h('span', { text: editing ? '교환소 편집' : '월간 교환' })),
       editing ? null : statusBar(groups),

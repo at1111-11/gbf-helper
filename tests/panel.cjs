@@ -32,7 +32,7 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await ready();
 
     const stock = kind => page.locator(`.stock-num[data-kind="${kind}"]`).innerText();
-    const totals = () => page.locator('.stock-cur small').allInnerTexts();
+    const totals = () => page.locator('#tab-monthly > .status:not(.status-week) .stock-cur small').allInnerTexts();
     assert.deepEqual([await stock('gold'), await stock('half'), await stock('seed'), await stock('quartz')], ['0', '0', '0', '0']);
     assert.deepEqual(await totals(), ['/2', '/1,010', '/1,700', '/40']);
     // Order: 주간 교환 → weekly box → 월간 교환 → totals box → shops. Each total is one line ([icon] 0/2).
@@ -59,33 +59,37 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await expect(page.locator('.weekly.shop .shop-thumb img')).toHaveAttribute('src', 'img/shop-weekly.webp');
     assert.deepEqual(await page.locator('#tab-monthly .weekly .chip-label').allInnerTexts(), ['아티팩트', 'FP', '보정석']);
     // Monthly totals: equal gaps between the four.
-    const gaps = await page.locator('.stock').evaluateAll(s => s.slice(1).map((x, k) => Math.round(x.getBoundingClientRect().left - s[k].getBoundingClientRect().right)));
-    assert.ok(Math.max(...gaps) - Math.min(...gaps) <= 1, 'totals are evenly spaced: ' + gaps);
+    // Weekly box totals follow the chips: 0/50 → 50/50 when done, 75 with 패스.
+    assert.deepEqual(await page.locator('#tab-monthly > .status-week .stock-cur').allInnerTexts(), ['0/50', '0/5,000', '0/100']);
     await expect(page.locator('#tab-monthly .shop[data-group="sandbox"] .chip-qty')).toHaveText(['×20', '×20', '×300']);
     await expect(page.locator('#tab-monthly .shop[data-group="sandbox"] .chip-label')).toHaveText(['미션', '상점']);
     checks.push('주간 교환 (아티팩트 50/패스 75 · FP 5,000/2배 10,000 · 보정석 100) above 월간 교환; monthly totals box under 월간 교환 with one-line [icon] n/total incl. 샌드박스 쿼츠 40');
     await expect(page.locator('#resetAt')).toHaveText(/^\d+\/1\(.\) 05:00$/);
     await expect(page.locator('#tab-monthly > .status:not(.status-week) .reset-line')).toHaveText(/^리셋까지 \d+(일 \d+시간|시간 \d+분|분)$/);
-    // Reset lines (weekly and monthly): two equal halves, each centered; even the longest countdown fits at panel and website widths.
+    // Summary boxes (weekly and monthly): totals and countdown in one box; totals evenly spaced, countdown centered in its space;
+    // even the longest values fit at panel and website widths.
     await expect(page.locator('#weekAt')).toHaveText(/^\d+\/\d+\(월\) 05:00$/);
     for (const w of [300, 360, 480, 1280]) {
       await page.setViewportSize({ width: w, height: 800 });
       const fit = await page.evaluate(() => {
         const out = [];
-        for (const id of ['resetLeft', 'weekLeft']) {
-          const b = document.getElementById(id), keep = b.textContent, row = b.closest('.status-reset');
-          for (const t of ['30일 23시간', '23시간 59분']) {
+        for (const box of document.querySelectorAll('#tab-monthly > .status')) {
+          const reset = box.querySelector('.status-reset'), b = reset.querySelector('.reset-line b'), keep = b.textContent;
+          for (const t of ['30일 23시간', '23시간 59分'.replace('分', '분')]) {
             b.textContent = t;
-            const cells = [...row.querySelectorAll('.reset-cell')];
-            const halves = Math.abs(cells[0].getBoundingClientRect().width - cells[1].getBoundingClientRect().width) <= 1;
-            const centered = cells.every(c => { const r = c.getBoundingClientRect(), k = [...c.children].map(x => x.getBoundingClientRect()).filter(r => r.width > 0); const mid = (k[0].left + k[k.length - 1].right) / 2; return Math.abs(mid - (r.left + r.right) / 2) <= 2; });
-            out.push(halves && centered && cells.every(c => c.scrollWidth <= c.clientWidth + 1));
+            const r = reset.getBoundingClientRect(), pad = parseFloat(getComputedStyle(reset).paddingLeft);
+            const kids = [...reset.children].map(x => x.getBoundingClientRect());
+            const mid = (Math.min(...kids.map(k => k.left)) + Math.max(...kids.map(k => k.right))) / 2;
+            out.push(Math.abs(mid - (r.left + pad + r.right) / 2) <= 2 && reset.scrollWidth <= reset.clientWidth + 1 && box.contains(reset));
           }
           b.textContent = keep;
+          const s = [...box.querySelectorAll('.stock')].map(x => x.getBoundingClientRect()), left = box.querySelector('.status-left').getBoundingClientRect();
+          const gaps = [s[0].left - left.left].concat(s.slice(1).map((x, k) => x.left - s[k].right), [left.right - s[s.length - 1].right]);
+          out.push(Math.max(...gaps) - Math.min(...gaps) <= 2 && Math.min(...gaps) >= 0);
         }
         return out.every(Boolean) && ![...document.querySelectorAll('.stock')].some(s => s.scrollWidth > s.clientWidth + 1);
       });
-      assert.ok(fit, `reset lines are two centered halves and fit at ${w}px`);
+      assert.ok(fit, `summary boxes: evenly spaced totals, centered countdown, nothing cut at ${w}px`);
     }
     await page.setViewportSize({ width: 360, height: 760 });
     assert.deepEqual(await page.locator('#tab-monthly .shop').evaluateAll(els => els.map(e => e.dataset.group).filter(g => g !== 'weekly')), ['fp', 'pendant', 'casino', 'skyleap', 'daily', 'treasure', 'sandbox']);
@@ -648,8 +652,16 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     await expect(page.locator('.pt-card .pt-name', { hasText: '정토 (G100 또는 HP 16%)' })).toHaveCount(1);
     await expect(page.locator('.pt-card .pt-name', { hasText: '정토 (G50 또는 HP 51%)' })).toHaveCount(1);
     await expect(page.locator('#tab-pattern')).not.toContainText('게이지 50%');
+    // Status names inside the text are shown as icons (hover for the name); definitions like "파괴의 힘(제네시스 게이지):" stay as words.
+    await expect(page.locator('.pt-opening')).toContainText('파괴의 힘(제네시스 게이지):');
+    await expect(page.locator('#tab-pattern')).not.toContainText('파괴의 법등·광등');
+    await expect(page.locator('#tab-pattern')).not.toContainText('사왕천~화락천');
+    const inline = await page.locator('#tab-pattern .tip-icon.pt-inline img').evaluateAll(a => [...new Set(a.map(i => i.getAttribute('src').split('/').pop()))]);
+    for (const f of ['v-mandate-destroy.webp', 'v-halo.webp', 'v-halo6.webp', 'v-dominion.webp', 'v-k1.webp', 'v-wing.webp', 'v-mandate.webp']) assert.ok(inline.includes(f), 'inline icon ' + f + ': ' + inline);
+    assert.ok(await page.locator('#tab-pattern .tip-icon.pt-inline img').evaluateAll(a => a.every(i => i.complete && i.naturalWidth > 0)), 'inline icons load');
     for (const n of ['신격 1주차', '신격 2주차']) await expect(page.locator('.pt-card').filter({ has: page.locator('.pt-name', { hasText: n }) })).toHaveCount(1);
-    await expect(page.locator('.pt-opening .tip-icon')).toHaveCount(2); // 법등 · 파괴의 힘 only (red/blue wills come at 80%)
+    await expect(page.locator('.pt-opening-head .tip-icon')).toHaveCount(2); // 법등 · 파괴의 힘 only (red/blue wills come at 80%)
+    await expect(page.locator('.pt-opening li .tip-icon.pt-inline')).toHaveCount(3); // 법등 / 파괴의 법등 · 광등 inside the text
     await expect(page.locator('.pt-opening')).toContainText('파괴의 힘(제네시스 게이지): 누가 턴을 넘길 때마다 +0.5%');
     await expect(page.locator('.pt-opening')).toContainText('팀 배정');
     await expect(page.locator('.pt-card.k-route-b .pt-tag.is-ct')).toHaveText('CT');
