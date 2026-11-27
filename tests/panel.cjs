@@ -112,16 +112,16 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     assert.deepEqual(await page.locator('#tab-recommend a.rc-portrait').evaluateAll(a => a.map(x => x.getAttribute('href'))), ['https://gbf.wiki/', 'https://lyria-note-korean.com/', 'https://mizagbf.github.io/GBFAL/index.html']);
     await expect(page.locator('#tab-recommend .rc-ribbon a')).toHaveCount(0);
     await expect(page.locator('#tab-recommend .rc-url')).toHaveCount(0); // no address line
-    // Contents banner on top: one entry per site, pressing it scrolls to the card.
-    assert.deepEqual(await page.locator('#tab-recommend .rc-toc .rc-toc-name').allInnerTexts(), ['GBF.WIKI', '루리아노트', 'GBFAL']);
-    const tocY = await page.locator('#tab-recommend .rc-toc').evaluate(e => e.getBoundingClientRect().top);
-    const firstCardY = await page.locator('#tab-recommend .rc-card').first().evaluate(e => e.getBoundingClientRect().top);
-    assert.ok(tocY < firstCardY, 'the contents banner sits above the cards');
-    await page.setViewportSize({ width: 360, height: 500 });
-    await page.locator('.rc-toc-item[data-target="rc-site-2"]').click();
+    // Contents on top (above the 사이트 line): Journal-style section banners; "사이트" scrolls to that section.
+    assert.deepEqual(await page.locator('#tab-recommend > *').evaluateAll(els => els.slice(0, 3).map(e => e.classList[0])), ['rc-toc', 'ribbon', 'rc-list']);
+    await expect(page.locator('#tab-recommend .rc-banner img')).toHaveAttribute('alt', '사이트');
+    assert.ok(await page.locator('#tab-recommend .rc-banner img').evaluate(i => i.complete && i.naturalWidth > 0), 'banner picture loads');
+    await page.setViewportSize({ width: 360, height: 400 });
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await page.locator('.rc-banner[data-target="rc-sec-sites"]').evaluate(b => b.click());
     await page.waitForTimeout(700);
-    const landed = await page.evaluate(() => { const c = document.getElementById('rc-site-2').getBoundingClientRect(); const top = document.querySelector('.top').getBoundingClientRect().bottom; return c.top >= top - 1 && c.top < window.innerHeight; });
-    assert.ok(landed, 'GBFAL card is scrolled into view under the tabs');
+    const landed = await page.evaluate(() => { const c = document.getElementById('rc-sec-sites').getBoundingClientRect(); const top = document.querySelector('.top').getBoundingClientRect().bottom; return c.top >= top - 1 && c.top < window.innerHeight; });
+    assert.ok(landed, '사이트 section is scrolled into view under the tabs');
     await page.setViewportSize({ width: 360, height: 760 });
     await page.evaluate(() => window.scrollTo(0, 0));
     assert.ok(await page.locator('#tab-recommend .rc-desc').allInnerTexts().then(t => t.every(x => !x.trim().endsWith('.'))), 'no trailing period');
@@ -647,7 +647,13 @@ const boxes = (page, selector) => page.locator(selector).evaluateAll(els => els.
     const g100 = await page.locator('.pt-card', { hasText: '정토 (G100' }).innerText();
     assert.ok(g100.includes('진입에 방어 DC를 사용하는 걸 고려'), 'G100 suggests the defence DC');
     const halo = await page.locator('.pt-card', { hasText: '6속성의 광배' }).innerText();
-    assert.ok(halo.includes('전조 한 개 해제') && halo.includes('자기 속성 파티가 전조 하나 해제'), '광배 wording');
+    assert.ok(halo.includes('전조 한 개 해제 시 자기 속성') && halo.includes('소거'), '광배 wording: 전조 한 개 해제 시 자기 속성 [광배] 소거');
+    // G100: what is removed and what the boss gains are on separate lines; 댐컷 wording; HP floors and FC are icons.
+    const g100Lines = await page.locator('.pt-card', { hasText: '정토 (G100' }).locator('li').allTextContents();
+    assert.ok(g100Lines.some(l => l.startsWith('해제: ') && l.includes('HP 15% 하한')) && g100Lines.some(l => l.startsWith('보스 강화: ') && l.includes('창세의 일익')), 'G100 splits 해제 / 보스 강화: ' + g100Lines);
+    await expect(page.locator('#tab-pattern')).not.toContainText('피해 컷');
+    await expect(page.locator('#tab-pattern')).not.toContainText('페이탈 체인');
+    assert.ok(await page.locator('#tab-pattern .tip-icon.pt-inline img[src$="fc.webp"]').count() >= 3, 'FC shown as an icon in cancel conditions');
     await expect(page.locator('#tab-pattern')).not.toContainText('1주차의 3배');
     await expect(page.locator('.pt-card .pt-name', { hasText: '정토 (G100 또는 HP 16%)' })).toHaveCount(1);
     await expect(page.locator('.pt-card .pt-name', { hasText: '정토 (G50 또는 HP 51%)' })).toHaveCount(1);

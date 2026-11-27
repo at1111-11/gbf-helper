@@ -34,24 +34,27 @@
         h('p', { class: 'rc-desc' }, desc(s.desc))));
   }
 
-  // Contents banner: one small entry per site; pressing it scrolls to that card.
+  // Contents at the top: one Journal-style banner per section (only 사이트 for now; more sections will come).
+  // Pressing a banner scrolls to its section.
+  const SECTIONS = [{ id: 'sites', title: '사이트', banner: 'img/notes/banner-sites.webp' }];
+
   function toc() {
-    return h('nav', { class: 'rc-toc', 'aria-label': '사이트 목차' }, SITES.map((s, i) =>
+    return h('nav', { class: 'rc-toc', 'aria-label': '베인 노트 목차' }, SECTIONS.map(sec =>
       h('button', {
-        type: 'button', class: 'rc-toc-item', dataset: { target: `rc-site-${i}` },
+        type: 'button', class: 'rc-banner', dataset: { target: `rc-sec-${sec.id}` }, 'aria-label': `${sec.title}로 이동`,
         onclick: () => {
-          const el = document.getElementById(`rc-site-${i}`);
+          const el = document.getElementById(`rc-sec-${sec.id}`);
           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      }, h('span', { class: `rc-toc-pic theme-${s.theme} is-${s.fit}` }, h('img', { src: s.img, alt: '' })), h('span', { class: 'rc-toc-name', text: s.name }))));
+      }, h('img', { src: sec.banner, alt: sec.title }))));
   }
 
   function render() {
     const host = document.getElementById('tab-recommend');
     if (!host) return;
     host.replaceChildren(
-      h('h2', { class: 'ribbon' }, h('span', { text: '사이트' })),
       toc(),
+      h('h2', { class: 'ribbon', id: 'rc-sec-sites' }, h('span', { text: '사이트' })),
       h('div', { class: 'rc-list' }, SITES.map(card)));
   }
   root.GBF_RECOMMEND = { SITES, mount() { render(); }, render };

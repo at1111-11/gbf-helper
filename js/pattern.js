@@ -83,8 +83,8 @@
     return h('li', { class: 'pt-sub' },
       h('div', { class: 'pt-sub-head' },
         l.n ? h('b', null, rich(l.n)) : null,
-        l.c ? h('span', { class: 'pt-sub-cond' }, h('i', { text: '해제' }), l.c) : null),
-      l.t ? h('div', { class: 'pt-sub-hard', title: '타화자재가 붙었을 때의 해제 조건' }, h('i', { text: '타화자재' }), l.t) : null,
+        l.c ? h('span', { class: 'pt-sub-cond' }, h('i', { text: '해제' }), rich(l.c)) : null),
+      l.t ? h('div', { class: 'pt-sub-hard', title: '타화자재가 붙었을 때의 해제 조건' }, h('i', { text: '타화자재' }), rich(l.t)) : null,
       l.e ? h('div', { class: 'pt-sub-eff' }, rich(l.e)) : null);
   }
 
@@ -96,7 +96,7 @@
         tag ? h('span', { class: 'pt-tag', text: tag }) : null,
         h('b', { class: 'pt-name', text: row.name }),
         icons(row.icons)),
-      row.cond ? h('div', { class: 'pt-cond' }, h('span', { text: '해제' }), row.cond) : null,
+      row.cond ? h('div', { class: 'pt-cond' }, h('span', { text: '해제' }), rich(row.cond)) : null,
       row.lines && row.lines.length ? h('ul', { class: 'pt-lines' }, row.lines.map(line)) : null,
       row.note ? h('div', { class: 'pt-note', text: row.note }) : null);
   }

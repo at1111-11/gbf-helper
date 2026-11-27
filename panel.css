@@ -702,10 +702,10 @@ button.chip-item:hover { filter: brightness(1.08); }
 }
 .pt-card-head { row-gap: 3px; }
 .pt-icons .tip-icon { width: 22px; height: 22px; }
-/* Boss debuffs inside pattern text: in-game icon from the sprite (21 cells), effect on hover. */
+/* Boss debuffs inside pattern text: in-game icon from the sprite (22 cells), effect on hover. */
 .pt-debuff {
   display: inline-block; width: 16px; height: 16px; margin: 0 1px; vertical-align: -3px; border-radius: 3px; cursor: help;
-  background: url("img/icons/debuffs.webp") no-repeat; background-size: 336px 16px; background-position: calc(var(--i) * -16px) 0;
+  background: url("img/icons/debuffs.webp") no-repeat; background-size: 352px 16px; background-position: calc(var(--i) * -16px) 0;
 }
 .pt-debuff:hover, .pt-debuff:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
 /* Raid status icons (기운, 구슬, 법등 …) written as {@key} inside pattern text. */
@@ -769,13 +769,12 @@ button.chip-item:hover { filter: brightness(1.08); }
 /* The round picture opens the site */
 a.rc-portrait { cursor: pointer; transition: transform .15s, box-shadow .15s; }
 a.rc-portrait:hover, a.rc-portrait:focus-visible { transform: scale(1.05); box-shadow: 0 0 0 3px #f6ecd6, 0 0 0 6px rgba(243, 205, 109, .85), 0 6px 14px rgba(40, 20, 5, .55); outline: none; }
-/* Contents banner on top */
-.rc-toc { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; max-width: 460px; margin: 0 auto 10px; padding: 7px 8px; border-radius: 8px; background: linear-gradient(180deg, #5b3b24, #33200f); border: 1px solid #b08850; box-shadow: inset 0 1px 0 rgba(255, 230, 180, .25), 0 2px 4px rgba(0, 0, 0, .45); }
-.rc-toc-item { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 3px; border-radius: 999px; border: 1px solid rgba(217, 183, 122, .5); background: rgba(0, 0, 0, .25); color: #f8eedb; font: 700 12.5px/1.2 "Gowun Batang Note", "Gowun Batang", serif; }
-.rc-toc-item:hover, .rc-toc-item:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
-.rc-toc-pic { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 0 0 1px #b08850; flex: none; }
-.rc-toc-pic img { width: 100%; height: 100%; object-fit: cover; }
-.rc-toc-pic.is-logo img { width: 80%; height: 80%; object-fit: contain; }
+/* Contents on top: Journal-style section banners (sepia plate, script title). */
+.rc-toc { display: grid; gap: 6px; max-width: 460px; margin: 2px auto 10px; }
+.rc-banner { display: block; width: 100%; padding: 0; border: 0; border-radius: 8px; background: none; cursor: pointer; box-shadow: 0 3px 8px rgba(0, 0, 0, .45); transition: transform .12s, filter .12s; }
+.rc-banner img { display: block; width: 100%; height: auto; border-radius: 8px; }
+.rc-banner:hover, .rc-banner:focus-visible { filter: brightness(1.06); transform: translateY(-1px); outline: none; box-shadow: 0 0 0 2px var(--gold), 0 4px 10px rgba(0, 0, 0, .5); }
+#rc-sec-sites { scroll-margin-top: calc(var(--top-h) + 8px); }
 .rc-star { color: var(--gold); font-size: 13px; }
 .rc-body {
   padding: 12px 14px 14px; text-align: center; color: #f3ead8; font-family: var(--serif); line-height: 1.6;
